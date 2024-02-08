@@ -3,9 +3,6 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "licenses": [
-    "MIT"
-  ],
   "scripts": {
     "build": "rimraf ./build && tsc",
     "dev": "nodemon",
@@ -17,6 +14,7 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.18.2",
+    "express-async-handler": "^1.2.0",
     "mongoose": "^8.1.1"
   },
   "devDependencies": {
