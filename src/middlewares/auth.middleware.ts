@@ -56,4 +56,33 @@ const protect = asyncHandler(
   }
 );
 
+// @desc Used for routes that are public. Will process JWT token if possible and set it to req.user
+const processJwtTokenIfPresent = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const auth = req.header("Authorization");
+    if (auth && auth.startsWith("Bearer ")) {
+      const encodedJWT = auth.substring("Bearer ".length);
+
+      if (
+        encodedJWT !== null &&
+        typeof encodedJWT !== `undefined` &&
+        process.env.JWT_SECRET
+      ) {
+        try {
+          const decoded = jwt.verify(
+            encodedJWT,
+            process.env.JWT_SECRET
+          ) as IUserPayload;
+
+          req.user = decoded;
+        } catch (err) {
+        } finally {
+          next();
+        }
+      }
+    }
+  }
+);
+
 export default protect;
+export { processJwtTokenIfPresent };
