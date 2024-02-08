@@ -12,7 +12,7 @@ connectDB();
 
 app.use(express.urlencoded({ extended: false })); // allow destructuring of req.body
 
-app.use("/api/users", userRouter);
+app.use("/api/auth", userRouter);
 
 app.use(errorHandler);
 
