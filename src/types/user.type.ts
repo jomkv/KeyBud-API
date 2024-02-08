@@ -5,4 +5,11 @@ interface IUser {
   switchType: String;
 }
 
-export default IUser;
+interface IUserPayload {
+  id: String;
+  username: String;
+  switchType: String;
+  email: String;
+}
+
+export { IUser, IUserPayload };

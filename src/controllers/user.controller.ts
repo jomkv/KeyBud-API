@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 import asyncHandler from "express-async-handler";
+import jwt from "jsonwebtoken";
 import User from "../models/user.model";
-import IUser from "../types/user.type";
+import { IUser } from "../types/user.type";
 
 // @desc Create new user
 // @route POST /api/users
@@ -68,12 +69,24 @@ const loginUser = asyncHandler(
     });
 
     if (user) {
-      res.status(200).json({
-        message: "Successful login",
+      const tokenPayload = {
         id: user._id,
         username: user.username,
         switchType: user.switchType,
         email: user.email,
+      };
+
+      if (!process.env.JWT_SECRET) {
+        throw new Error("JWT_SECRET not defined in the environment");
+      }
+
+      const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, {
+        expiresIn: "7d",
+      });
+
+      res.status(200).json({
+        message: "Successful login",
+        token: token,
       });
     } else {
       res.status(400);
