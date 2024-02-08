@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import asyncHandler from "express-async-handler";
 import jwt from "jsonwebtoken";
 import User from "../models/user.model";
-import { IUser } from "../types/user.type";
+import { IUser, IUserPayload } from "../types/user.type";
 
 // @desc Create new user
 // @route POST /api/users
@@ -66,7 +66,7 @@ const loginUser = asyncHandler(
     const user = await User.findOne({
       $or: [{ username: username }, { email: email }],
       password: password,
-    });
+    }).select("-password");
 
     if (user) {
       const tokenPayload = {

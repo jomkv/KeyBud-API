@@ -1,4 +1,4 @@
-import jwt, { VerifyErrors, VerifyOptions } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import asyncHandler from "express-async-handler";
 import { Request, Response, NextFunction } from "express";
 import { IUserPayload } from "../types/user.type";
