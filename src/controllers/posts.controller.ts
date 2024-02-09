@@ -48,41 +48,92 @@ const createPost = asyncHandler(
 // @desc Get details about a post
 // @route GET /posts/:postId
 // @access Public
-const getPost = asyncHandler(async (req: Request, res: Response) => {
-  const postId = req.params.id;
-  if (!postId) {
-    res.status(401);
-    throw new Error("Post ID not found");
-  }
-
-  const post: IPosts | null = await Posts.findOne({ _id: postId });
-
-  if (post) {
-    // Find owner's username
-    const postOwner = await User.findOne({ _id: post.owner });
-    let ownerName;
-
-    if (postOwner) {
-      ownerName = postOwner.username;
-    } else {
-      // owner not found, TODO
+const getPost = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const postId = req.params.id;
+    if (!postId) {
+      res.status(401);
+      throw new Error("Post ID not found");
     }
 
-    const postData = {
-      title: post.title,
-      description: post.description,
-      owner: ownerName,
-      isOwner: post.owner == req.user?.id,
-    };
+    const post: IPosts | null = await Posts.findOne({ _id: postId });
 
-    res.status(200).json({
-      message: "Post found!",
-      postData,
-    });
-  } else {
-    res.status(400);
-    throw new Error("Post not found");
+    if (post) {
+      // Find owner's username
+      const postOwner = await User.findOne({ _id: post.owner });
+      let ownerName;
+
+      if (postOwner) {
+        ownerName = postOwner.username;
+      } else {
+        // owner not found, TODO
+      }
+
+      const postData = {
+        title: post.title,
+        description: post.description,
+        owner: ownerName,
+        isOwner: post.owner == req.user?.id,
+      };
+
+      res.status(200).json({
+        message: "Post found!",
+        postData,
+      });
+    } else {
+      res.status(400);
+      throw new Error("Post not found");
+    }
   }
-});
+);
 
-export { createPost, getPost };
+// @desc Delete a post, must be the owner of the post
+// @route DELETE /posts/:postId
+// @access Private
+const deletePost = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const postId = req.params.id;
+
+    if (!postId) {
+      res.status(400);
+      throw new Error("Post ID not found");
+    }
+
+    // Get ID of Post's owner
+    const ownerId = (await Posts.findOne({ _id: postId }))?.owner;
+
+    if (!ownerId) {
+      res.status(400);
+      throw new Error("Post not found");
+    }
+
+    const sessionUserId = req.user?.id;
+
+    if (!sessionUserId) {
+      throw new Error("Session invalid, please login again");
+    }
+
+    if (ownerId != sessionUserId) {
+      res.status(401);
+      throw new Error("User not authorized to delete this post");
+    }
+
+    const deletedItem = await Posts.findByIdAndDelete(postId);
+
+    if (deletedItem) {
+      res.status(200).json({
+        message: "Post Deletion successful",
+        deletedPost: {
+          id: deletedItem.id,
+          title: deletedItem.title,
+          description: deletedItem.description,
+          owner: deletedItem.owner,
+        },
+      });
+    } else {
+      throw new Error("Post Deletion failed");
+    }
+  }
+);
+
+export { createPost, getPost, deletePost };

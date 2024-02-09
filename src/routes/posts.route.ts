@@ -1,5 +1,9 @@
 import { Router } from "express";
-import { createPost, getPost } from "../controllers/posts.controller";
+import {
+  createPost,
+  getPost,
+  deletePost,
+} from "../controllers/posts.controller";
 import protect, {
   processJwtTokenIfPresent,
 } from "../middlewares/auth.middleware";
@@ -7,6 +11,9 @@ import protect, {
 const router: Router = Router();
 
 router.route("/").post(protect, createPost);
-router.route("/:id").get(processJwtTokenIfPresent, getPost);
+router
+  .route("/:id")
+  .get(processJwtTokenIfPresent, getPost)
+  .delete(protect, deletePost);
 
 export default router;
