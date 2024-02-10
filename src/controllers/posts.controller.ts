@@ -113,7 +113,7 @@ const deletePost = asyncHandler(
       throw new Error("Session invalid, please login again");
     }
 
-    if (ownerId != sessionUserId) {
+    if (ownerId !== sessionUserId) {
       res.status(401);
       throw new Error("User not authorized to delete this post");
     }

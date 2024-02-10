@@ -11,13 +11,20 @@ const postsSchema: Schema = new Schema<IPosts>({
     required: true,
   },
   owner: {
-    type: Types.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     ref: "User",
+    required: true,
   },
   image: {
     type: Buffer,
     required: false,
   },
+  comments: [
+    {
+      type: Types.ObjectId,
+      ref: "Comment",
+    },
+  ],
 });
 
 // Posts model

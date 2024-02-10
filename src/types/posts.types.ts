@@ -1,8 +1,11 @@
+import { Types } from "mongoose";
+
 interface IPosts {
   title: String;
   description: String;
-  owner: String;
+  owner: Types.ObjectId;
   image?: Buffer;
+  comments: Types.ObjectId[];
 }
 
 export { IPosts };

@@ -1,3 +1,5 @@
+import { Types } from "mongoose";
+
 interface IUser {
   username: String;
   email: String;
@@ -6,7 +8,7 @@ interface IUser {
 }
 
 interface IUserPayload {
-  id: String;
+  id: Types.ObjectId;
   username: String;
   switchType: String;
   email: String;
