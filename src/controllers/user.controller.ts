@@ -5,7 +5,7 @@ import User from "../models/user.model";
 import { IUser, IUserPayload } from "../types/user.type";
 
 // @desc Create new user
-// @route POST /api/users
+// @route POST /api/auth/register
 // @access Public
 const registerUser = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
@@ -50,7 +50,7 @@ const registerUser = asyncHandler(
 );
 
 // @desc User login
-// @route POST /api/users/login
+// @route POST /api/auth/login
 // @access Public
 const loginUser = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
@@ -93,6 +93,13 @@ const loginUser = asyncHandler(
       throw new Error("Username/Email and Password does not match");
     }
   }
+);
+
+// @desc Get user's profile (posts, username)
+// @route POST /api/profile/:userId
+// @access Public
+const getUserProfile = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {}
 );
 
 export { registerUser, loginUser };

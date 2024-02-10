@@ -1,5 +1,5 @@
 import mongoose, { Schema, Types, model } from "mongoose";
-import { IPosts } from "../types/posts.types";
+import { IPosts } from "../types/posts.type";
 
 const postsSchema: Schema = new Schema<IPosts>({
   title: {
@@ -23,6 +23,7 @@ const postsSchema: Schema = new Schema<IPosts>({
     {
       type: Types.ObjectId,
       ref: "Comment",
+      required: false,
     },
   ],
 });
