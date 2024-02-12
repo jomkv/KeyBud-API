@@ -75,12 +75,11 @@ const processJwtTokenIfPresent = asyncHandler(
           ) as IUserPayload;
 
           req.user = decoded;
-        } catch (err) {
-        } finally {
-          next();
-        }
+        } catch (err) {}
       }
     }
+
+    next();
   }
 );
 

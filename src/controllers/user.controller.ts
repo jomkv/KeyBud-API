@@ -69,7 +69,7 @@ const loginUser = asyncHandler(
     }).select("-password");
 
     if (user) {
-      const tokenPayload = {
+      const tokenPayload: IUserPayload = {
         id: user._id,
         username: user.username,
         switchType: user.switchType,
