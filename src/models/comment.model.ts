@@ -2,11 +2,11 @@ import mongoose, { Schema, Types, model } from "mongoose";
 import { IComment } from "../types/comment.type";
 
 const commentSchema: Schema = new Schema<IComment>({
-  description: {
+  comment: {
     type: String,
     required: true,
   },
-  owner: {
+  ownerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true,

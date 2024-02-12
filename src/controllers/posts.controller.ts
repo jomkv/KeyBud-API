@@ -20,7 +20,7 @@ const getPost = asyncHandler(
 
     if (post) {
       // Find owner's username
-      const postOwner = await User.findOne({ _id: post.owner });
+      const postOwner = await User.findOne({ _id: post.ownerId });
       let ownerName;
 
       if (postOwner) {
@@ -33,7 +33,7 @@ const getPost = asyncHandler(
         title: post.title,
         description: post.description,
         owner: ownerName,
-        isOwner: post.owner == req.user?.id,
+        isOwner: post.ownerId == req.user?.id,
         comments: post.comments,
       };
 
@@ -70,7 +70,7 @@ const createPost = asyncHandler(
     const newPost = await Posts.create({
       title: title,
       description: description,
-      owner: ownerId,
+      ownerId: ownerId,
     });
 
     if (newPost) {
@@ -80,7 +80,7 @@ const createPost = asyncHandler(
           id: newPost._id,
           title: newPost.title,
           description: newPost.description,
-          owner: newPost.owner,
+          ownerId: newPost.ownerId,
         },
       });
     } else {
@@ -102,7 +102,7 @@ const deletePost = asyncHandler(
     }
 
     // Get ID of Post's owner
-    const ownerId = (await Posts.findOne({ _id: postId }))?.owner;
+    const ownerId = (await Posts.findOne({ _id: postId }))?.ownerId;
 
     if (!ownerId) {
       res.status(400);
@@ -138,7 +138,7 @@ const deletePost = asyncHandler(
           id: deletedPost._id,
           title: deletedPost.title,
           description: deletedPost.description,
-          owner: deletedPost.owner,
+          ownerId: deletedPost.ownerId,
         },
       });
     } else {

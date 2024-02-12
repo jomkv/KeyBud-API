@@ -10,7 +10,7 @@ const postsSchema: Schema = new Schema<IPosts>({
     type: String,
     required: true,
   },
-  owner: {
+  ownerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true,

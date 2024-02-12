@@ -1,8 +1,8 @@
 import { Types } from "mongoose";
 
 interface IComment {
-  description: String;
-  owner: Types.ObjectId;
+  comment: String;
+  ownerId: Types.ObjectId;
   repliesTo: Types.ObjectId;
 }
 

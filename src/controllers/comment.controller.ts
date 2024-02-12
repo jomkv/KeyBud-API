@@ -4,6 +4,10 @@ import Posts from "../models/posts.model";
 import Comment from "../models/comment.model";
 import { IComment } from "../types/comment.type";
 
+// @desc View a comment
+// @route GET /api/posts/:postId/comment
+// @access Private
+
 // @desc Comment at a post
 // @route POST /api/posts/:postId/comment
 // @access Private
@@ -15,9 +19,9 @@ const createComment = asyncHandler(async (req: Request, res: Response) => {
     throw new Error("PostID not found");
   }
 
-  const { description } = req.body;
+  const { comment } = req.body;
 
-  if (!description) {
+  if (!comment) {
     res.status(400);
     throw new Error("Comment Description not found");
   }
@@ -31,8 +35,8 @@ const createComment = asyncHandler(async (req: Request, res: Response) => {
 
   // Create comment
   const newComment = await Comment.create({
-    description,
-    owner: req.user?.id,
+    comment,
+    ownerId: req.user?.id,
     repliesTo: postId,
   });
 
@@ -50,8 +54,8 @@ const createComment = asyncHandler(async (req: Request, res: Response) => {
     res.status(201).json({
       message: "Comment successfully created",
       comment: {
-        description: newComment.description,
-        owner: newComment.owner,
+        description: newComment.comment,
+        owner: newComment.ownerId,
         repliesTo: newComment.repliesTo,
       },
     });
