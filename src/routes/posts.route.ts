@@ -3,6 +3,7 @@ import {
   createPost,
   getPost,
   deletePost,
+  editPost,
 } from "../controllers/posts.controller";
 import {
   getComment,
@@ -20,6 +21,7 @@ router.route("/").post(protect, createPost);
 router
   .route("/:id")
   .get(processJwtTokenIfPresent, getPost)
+  .put(protect, editPost)
   .delete(protect, deletePost);
 
 // Comments

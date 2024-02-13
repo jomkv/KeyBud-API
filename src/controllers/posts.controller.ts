@@ -16,25 +16,19 @@ const getPost = asyncHandler(
       throw new Error("Post ID not found");
     }
 
-    const post: IPosts | null = await Posts.findOne({ _id: postId });
+    const post: IPosts | null = await Posts.findById(postId);
 
     if (post) {
       // Find owner's username
-      const postOwner = await User.findOne({ _id: post.ownerId });
-      let ownerName;
-
-      if (postOwner) {
-        ownerName = postOwner.username;
-      } else {
-        // owner not found, TODO
-      }
+      const ownerName = await User.findById(post.ownerId);
 
       const postData = {
         title: post.title,
         description: post.description,
-        owner: ownerName,
+        owner: ownerName?.username || "Unknown Owner",
         isOwner: post.ownerId == req.user?.id,
         comments: post.comments,
+        isEditted: post.isEditted,
       };
 
       res.status(200).json({
@@ -67,6 +61,13 @@ const createPost = asyncHandler(
       throw new Error("User not found, kindly login again");
     }
 
+    const owner = await User.findById(ownerId);
+
+    if (!owner) {
+      res.status(400);
+      throw new Error("Invalid session, user not found");
+    }
+
     const newPost = await Posts.create({
       title: title,
       description: description,
@@ -77,14 +78,63 @@ const createPost = asyncHandler(
       res.status(201).json({
         message: "Successfully created new post",
         post: {
-          id: newPost._id,
+          postId: newPost._id,
           title: newPost.title,
           description: newPost.description,
+          owner: owner.username,
           ownerId: newPost.ownerId,
         },
       });
     } else {
       throw new Error("Unable to create new post");
+    }
+  }
+);
+
+// @desc Edit a post, must be the owner of the post
+// @route PUT /api/posts/:postId
+// @access Private
+const editPost = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const { title, description } = req.body;
+    const postId = req.params.id;
+
+    if (!title || !description) {
+      res.status(400);
+      throw new Error("Incomplete input");
+    }
+
+    if (!postId) {
+      res.status(400);
+      throw new Error("Post ID not found");
+    }
+
+    const post: IPosts | null = await Posts.findById(postId);
+
+    if (!post) {
+      res.status(400);
+      throw new Error("Post not found");
+    }
+
+    // Check if user is the owner
+    if (post.ownerId != req.user?.id) {
+      res.status(401);
+      throw new Error("User not authorized to edit this post");
+    }
+
+    const updatedPost = await Posts.findByIdAndUpdate(
+      postId,
+      { title, description, isEditted: true },
+      { new: true } // returns the updated object
+    );
+
+    if (updatedPost) {
+      res.status(200).json({
+        message: "Post successfully updated",
+        updatedPost,
+      });
+    } else {
+      throw new Error("Unable to update post");
     }
   }
 );
@@ -102,7 +152,7 @@ const deletePost = asyncHandler(
     }
 
     // Get ID of Post's owner
-    const ownerId = (await Posts.findOne({ _id: postId }))?.ownerId;
+    const ownerId = (await Posts.findById(postId))?.ownerId;
 
     if (!ownerId) {
       res.status(400);
@@ -135,7 +185,7 @@ const deletePost = asyncHandler(
       res.status(200).json({
         message: "Post Deletion successful",
         deletedPost: {
-          id: deletedPost._id,
+          postId: deletedPost._id,
           title: deletedPost.title,
           description: deletedPost.description,
           ownerId: deletedPost.ownerId,
@@ -147,4 +197,4 @@ const deletePost = asyncHandler(
   }
 );
 
-export { createPost, getPost, deletePost };
+export { createPost, getPost, deletePost, editPost };

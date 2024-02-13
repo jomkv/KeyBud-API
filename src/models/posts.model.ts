@@ -26,6 +26,11 @@ const postsSchema: Schema = new Schema<IPosts>({
       required: false,
     },
   ],
+  isEditted: {
+    type: Boolean,
+    required: false,
+    default: false,
+  },
 });
 
 // Posts model
