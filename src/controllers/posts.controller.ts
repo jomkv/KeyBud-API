@@ -29,6 +29,7 @@ const getPost = asyncHandler(
         isOwner: post.ownerId == req.user?.id,
         comments: post.comments,
         isEditted: post.isEditted,
+        likeCount: post.likeCount,
       };
 
       res.status(200).json({
@@ -197,4 +198,64 @@ const deletePost = asyncHandler(
   }
 );
 
-export { createPost, getPost, deletePost, editPost };
+// @desc Like a post
+// @route POST /api/posts/:postId/like
+// @access Private
+const likePost = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const postId = req.params.id;
+
+    if (!postId) {
+      res.status(400);
+      throw new Error("Post ID not found");
+    }
+
+    const post = await Posts.findById(postId);
+
+    if (!post) {
+      res.status(400);
+      throw new Error("Post not found");
+    }
+
+    const isPostAlreadyLiked = await User.findOne({
+      likedPosts: { $in: [postId] },
+    });
+
+    if (isPostAlreadyLiked) {
+      res.status(400);
+      throw new Error("User already liked this post");
+    }
+
+    const updatedPost = await Posts.findByIdAndUpdate(
+      postId,
+      { $inc: { likeCount: 1 } },
+      { new: true }
+    );
+
+    if (updatedPost) {
+      // Append the postId to user's likedPosts
+      const updatedUser = await User.findByIdAndUpdate(
+        req.user?.id,
+        {
+          $push: { likedPosts: postId },
+        },
+        {
+          new: true,
+        }
+      );
+
+      if (!updatedUser) {
+        throw new Error("Unable to update User's likedPosts");
+      }
+
+      res.status(200).json({
+        message: "Post successfully liked",
+        updatedPost,
+      });
+    } else {
+      throw new Error("Unable to like post");
+    }
+  }
+);
+
+export { createPost, getPost, deletePost, editPost, likePost };

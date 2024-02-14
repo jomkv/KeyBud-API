@@ -7,6 +7,7 @@ interface IPosts {
   image?: Buffer;
   comments: Types.ObjectId[];
   isEditted: Boolean;
+  likeCount: Number;
 }
 
 export { IPosts };

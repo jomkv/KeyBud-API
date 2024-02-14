@@ -1,4 +1,4 @@
-import mongoose, { Document, model, Schema } from "mongoose";
+import { Schema, Types, model } from "mongoose";
 import { IUser } from "../types/user.type";
 
 const userSchema: Schema = new Schema<IUser>({
@@ -20,6 +20,20 @@ const userSchema: Schema = new Schema<IUser>({
     type: String,
     require: true,
   },
+  likedPosts: [
+    {
+      type: Types.ObjectId,
+      ref: "Posts",
+      required: false,
+    },
+  ],
+  likedComments: [
+    {
+      type: Types.ObjectId,
+      ref: "Comment",
+      required: false,
+    },
+  ],
 });
 
 // user model

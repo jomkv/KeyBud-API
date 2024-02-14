@@ -31,6 +31,11 @@ const postsSchema: Schema = new Schema<IPosts>({
     required: false,
     default: false,
   },
+  likeCount: {
+    type: Number,
+    required: false,
+    default: 0,
+  },
 });
 
 // Posts model
