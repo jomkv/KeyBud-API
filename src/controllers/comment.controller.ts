@@ -32,8 +32,10 @@ const getComment = asyncHandler(
     const commentPayload = {
       postTitle: parentPost.title,
       postDescription: parentPost.description,
+      postLikes: parentPost.likeCount,
       isPostOwner: parentPost.ownerId == req.user?.id,
       comment: comment.comment,
+      commentLikes: comment.likeCount,
       isCommentOwner: comment.ownerId == req.user?.id,
     };
 
