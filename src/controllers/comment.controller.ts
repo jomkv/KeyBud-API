@@ -155,7 +155,7 @@ const deleteComment = asyncHandler(
 
     const deletedComment = await Comment.findByIdAndDelete(commentId);
     if (deletedComment) {
-      // delete comment from user's likedPost
+      // delete comment from user's likedComments
       await User.updateMany({}, { $pull: { likedComments: commentId } });
 
       res.status(200).json({
@@ -246,7 +246,7 @@ const likeComment = asyncHandler(
       throw new Error("Session invalid, please login again");
     }
 
-    // Determine if post is already liked by user or not
+    // Determine if comment is already liked by user or not
     const isLiked = (await User.findOne({
       $and: [{ _id: sessionUserId }, { likedComments: { $in: [commentId] } }],
     }))
@@ -267,15 +267,15 @@ const likeComment = asyncHandler(
       );
 
       if (!isSuccess) {
-        throw new Error("Unable to update User's likedPosts");
+        throw new Error("Unable to update User's likedComments");
       }
 
       res.status(200).json({
-        message: `Post successfully ${isLiked ? "Unliked" : "Liked"}`,
+        message: `Comment successfully ${isLiked ? "Unliked" : "Liked"}`,
         updatedComment,
       });
     } else {
-      throw new Error("Unable to like post");
+      throw new Error("Unable to like comment");
     }
   }
 );
