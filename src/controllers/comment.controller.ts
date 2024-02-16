@@ -155,6 +155,9 @@ const deleteComment = asyncHandler(
 
     const deletedComment = await Comment.findByIdAndDelete(commentId);
     if (deletedComment) {
+      // delete comment from user's likedPost
+      await User.updateMany({}, { $pull: { likedComments: commentId } });
+
       res.status(200).json({
         message: "Comment successfully deleted",
         deletedComment,
