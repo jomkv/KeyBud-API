@@ -69,7 +69,7 @@ const loginUser = asyncHandler(
     }).select("-password");
 
     if (user) {
-      const tokenPayload: IUserPayload = {
+      const userPayload: IUserPayload = {
         id: user._id,
         username: user.username,
         switchType: user.switchType,
@@ -80,12 +80,13 @@ const loginUser = asyncHandler(
         throw new Error("JWT_SECRET not defined in the environment");
       }
 
-      const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, {
+      const token = jwt.sign(userPayload, process.env.JWT_SECRET, {
         expiresIn: "7d",
       });
 
       res.status(200).json({
         message: "Successful login",
+        userPayload,
         token: token,
       });
     } else {

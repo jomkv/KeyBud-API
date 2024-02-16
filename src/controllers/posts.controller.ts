@@ -166,7 +166,7 @@ const deletePost = asyncHandler(
       throw new Error("Session invalid, please login again");
     }
 
-    if (ownerId !== sessionUserId) {
+    if (ownerId != sessionUserId) {
       res.status(401);
       throw new Error("User not authorized to delete this post");
     }
@@ -182,6 +182,9 @@ const deletePost = asyncHandler(
       if (!deletedCommendResult) {
         throw new Error("Failed to delete post's comments");
       }
+
+      // delete post from user's likedPost
+      await User.updateMany({}, { $pull: { likedPosts: postId } });
 
       res.status(200).json({
         message: "Post Deletion successful",
