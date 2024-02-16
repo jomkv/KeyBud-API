@@ -12,6 +12,7 @@ import {
   deleteComment,
   editComment,
   getComment,
+  likeComment,
 } from "../controllers/comment.controller";
 import protect, {
   processJwtTokenIfPresent,
@@ -38,5 +39,6 @@ router
 router
   .route("/:postId/comment/:commentId")
   .get(processJwtTokenIfPresent, getCommentWithPost);
+router.route("/comment/:commentId/like").post(protect, likeComment);
 
 export default router;
