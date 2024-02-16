@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { Types } from "mongoose";
 import Posts from "../models/posts.model";
 import User from "../models/user.model";
 import Comment from "../models/comment.model";
@@ -201,7 +202,7 @@ const deletePost = asyncHandler(
   }
 );
 
-// @desc Like a post
+// @desc Likes/Unlikes a post
 // @route POST /api/posts/:postId/like
 // @access Private
 const likePost = asyncHandler(
@@ -220,39 +221,38 @@ const likePost = asyncHandler(
       throw new Error("Post not found");
     }
 
-    const isPostAlreadyLiked = await User.findOne({
-      likedPosts: { $in: [postId] },
-    });
+    const sessionUserId = req.user?.id;
 
-    if (isPostAlreadyLiked) {
-      res.status(400);
-      throw new Error("User already liked this post");
+    if (!sessionUserId) {
+      throw new Error("Session invalid, please login again");
     }
+
+    // Determine if post is already liked by user or not
+    const isLiked = (await User.findOne({
+      $and: [{ _id: sessionUserId }, { likedPosts: { $in: [postId] } }],
+    }))
+      ? true
+      : false;
 
     const updatedPost = await Posts.findByIdAndUpdate(
       postId,
-      { $inc: { likeCount: 1 } },
+      { $inc: { likeCount: isLiked ? -1 : 1 } },
       { new: true }
     );
 
     if (updatedPost) {
-      // Append the postId to user's likedPosts
-      const updatedUser = await User.findByIdAndUpdate(
-        req.user?.id,
-        {
-          $push: { likedPosts: postId },
-        },
-        {
-          new: true,
-        }
+      const isSuccess: boolean = await updateUserLikedPosts(
+        sessionUserId,
+        postId,
+        !isLiked
       );
 
-      if (!updatedUser) {
+      if (!isSuccess) {
         throw new Error("Unable to update User's likedPosts");
       }
 
       res.status(200).json({
-        message: "Post successfully liked",
+        message: `Post successfully ${isLiked ? "Unliked" : "Liked"}`,
         updatedPost,
       });
     } else {
@@ -260,5 +260,33 @@ const likePost = asyncHandler(
     }
   }
 );
+
+const updateUserLikedPosts = async (
+  userId: Types.ObjectId,
+  postId: string,
+  like: boolean // true for like, false for unlike
+): Promise<boolean> => {
+  let isSuccess: boolean;
+
+  // Remove from user's likedPosts
+  if (!like) {
+    await User.updateMany({ _id: userId }, { $pull: { likedPosts: postId } });
+    isSuccess = true;
+  } else {
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        $push: { likedPosts: postId },
+      },
+      {
+        new: true,
+      }
+    );
+
+    isSuccess = updatedUser ? true : false;
+  }
+
+  return isSuccess;
+};
 
 export { createPost, getPost, deletePost, editPost, likePost };
