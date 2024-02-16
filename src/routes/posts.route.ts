@@ -7,9 +7,11 @@ import {
   likePost,
 } from "../controllers/posts.controller";
 import {
-  getComment,
+  getCommentWithPost,
   createComment,
   deleteComment,
+  editComment,
+  getComment,
 } from "../controllers/comment.controller";
 import protect, {
   processJwtTokenIfPresent,
@@ -28,9 +30,13 @@ router.route("/:id/like").post(protect, likePost);
 
 // Comments
 router.route("/:postId/comment").post(protect, createComment);
-router.route("/comment/:commentId").delete(protect, deleteComment);
+router
+  .route("/comment/:commentId")
+  .get(processJwtTokenIfPresent, getComment)
+  .delete(protect, deleteComment)
+  .put(protect, editComment);
 router
   .route("/:postId/comment/:commentId")
-  .get(processJwtTokenIfPresent, getComment);
+  .get(processJwtTokenIfPresent, getCommentWithPost);
 
 export default router;
