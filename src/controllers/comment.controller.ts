@@ -1,10 +1,17 @@
-import asyncHandler from "express-async-handler";
-import { Types } from "mongoose";
-import { Request, Response } from "express";
 import Posts from "../models/posts.model";
 import Comment from "../models/comment.model";
 import User from "../models/user.model";
 import { IComment } from "../types/comment.type";
+
+// * Libraries
+import asyncHandler from "express-async-handler";
+import { Types } from "mongoose";
+import { Request, Response } from "express";
+
+// * Custom Errors
+import BadRequestError from "../errors/BadRequestError";
+import DatabaseError from "../errors/DatabaseError";
+import AuthenticationError from "../errors/AuthenticationError";
 
 // @desc Get a comment from a specific post
 // @route GET /api/posts/:postId/comment/:commentId
@@ -17,14 +24,11 @@ const getCommentWithPost = asyncHandler(
     const comment = await Comment.findById(commentId);
 
     if (!parentPost && !comment) {
-      res.status(400);
-      throw new Error("Both Post and Comment not found");
+      throw new BadRequestError("Both Post and Comment not found");
     } else if (!parentPost) {
-      res.status(400);
-      throw new Error("Post not found");
+      throw new BadRequestError("Post not found");
     } else if (!comment) {
-      res.status(400);
-      throw new Error("Comment not found");
+      throw new BadRequestError("Comment not found");
     }
 
     const commentPayload = {
@@ -66,8 +70,7 @@ const getComment = asyncHandler(
         comment: commentPayload,
       });
     } else {
-      res.status(400);
-      throw new Error("Comment not found");
+      throw new BadRequestError("Comment not found");
     }
   }
 );
@@ -80,8 +83,7 @@ const createComment = asyncHandler(
     const postId = req.params.postId;
 
     if (!postId) {
-      res.status(400);
-      throw new Error(
+      throw new BadRequestError(
         "'postId' is a required parameter. Make sure it is provided in the request"
       );
     }
@@ -89,15 +91,13 @@ const createComment = asyncHandler(
     const { comment } = req.body;
 
     if (!comment) {
-      res.status(400);
-      throw new Error("Comment not found");
+      throw new BadRequestError("Comment not found");
     }
 
     const repliesTo = await Posts.findById(postId);
 
     if (!repliesTo) {
-      res.status(400);
-      throw new Error("Post not found");
+      throw new BadRequestError("Post not found");
     }
 
     // Create comment
@@ -115,7 +115,7 @@ const createComment = asyncHandler(
       );
 
       if (!updatedPost) {
-        throw new Error("Failed to update post that is being commented");
+        throw new DatabaseError();
       }
 
       res.status(201).json({
@@ -128,7 +128,7 @@ const createComment = asyncHandler(
         },
       });
     } else {
-      throw new Error("Failed to create new comment");
+      throw new DatabaseError();
     }
   }
 );
@@ -143,14 +143,12 @@ const deleteComment = asyncHandler(
     const comment = await Comment.findById(commentId);
 
     if (!comment) {
-      res.status(400);
-      throw new Error("Invalid commentId, Comment not found");
+      throw new BadRequestError("Invalid commentId, Comment not found");
     }
 
     // Check if owner
     if (comment.ownerId != req.user?.id) {
-      res.status(401);
-      throw new Error("User is not authorized to perform this action");
+      throw new AuthenticationError();
     }
 
     const deletedComment = await Comment.findByIdAndDelete(commentId);
@@ -163,7 +161,7 @@ const deleteComment = asyncHandler(
         deletedComment,
       });
     } else {
-      throw new Error("Error during comment deletion");
+      throw new DatabaseError();
     }
   }
 );
@@ -177,26 +175,22 @@ const editComment = asyncHandler(
     const commentId = req.params.id;
 
     if (!comment) {
-      res.status(400);
-      throw new Error("Incomplete input");
+      throw new BadRequestError("Incomplete input");
     }
 
     if (!commentId) {
-      res.status(400);
-      throw new Error("Comment ID not found");
+      throw new BadRequestError("Comment ID not found");
     }
 
     const commentFound: IComment | null = await Posts.findById(commentId);
 
     if (!commentFound) {
-      res.status(400);
-      throw new Error("Comment not found");
+      throw new BadRequestError("Comment not found");
     }
 
     // Check if user is the owner
     if (commentFound.ownerId != req.user?.id) {
-      res.status(401);
-      throw new Error("User not authorized to edit this Comment");
+      throw new AuthenticationError();
     }
 
     const updatedComment = await Comment.findByIdAndUpdate(
@@ -216,7 +210,7 @@ const editComment = asyncHandler(
         },
       });
     } else {
-      throw new Error("Unable to update Comment");
+      throw new DatabaseError();
     }
   }
 );
@@ -229,21 +223,19 @@ const likeComment = asyncHandler(
     const commentId = req.params.commentId;
 
     if (!commentId) {
-      res.status(400);
-      throw new Error("Comment ID not found");
+      throw new BadRequestError("Comment ID not found");
     }
 
     const comment: IComment | null = await Comment.findById(commentId);
 
     if (!comment) {
-      res.status(400);
-      throw new Error("Comment not found");
+      throw new BadRequestError("Comment not found");
     }
 
     const sessionUserId = req.user?.id;
 
     if (!sessionUserId) {
-      throw new Error("Session invalid, please login again");
+      throw new AuthenticationError();
     }
 
     // Determine if comment is already liked by user or not
@@ -267,7 +259,7 @@ const likeComment = asyncHandler(
       );
 
       if (!isSuccess) {
-        throw new Error("Unable to update User's likedComments");
+        throw new DatabaseError();
       }
 
       res.status(200).json({
@@ -275,7 +267,7 @@ const likeComment = asyncHandler(
         updatedComment,
       });
     } else {
-      throw new Error("Unable to like comment");
+      throw new DatabaseError();
     }
   }
 );

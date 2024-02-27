@@ -1,10 +1,17 @@
-import { Request, Response } from "express";
-import { Types } from "mongoose";
 import Posts from "../models/posts.model";
 import User from "../models/user.model";
 import Comment from "../models/comment.model";
-import asyncHandler from "express-async-handler";
 import { IPosts } from "../types/posts.type";
+
+// * Libraries
+import { Request, Response } from "express";
+import { Types } from "mongoose";
+import asyncHandler from "express-async-handler";
+
+// * Custom Errors
+import BadRequestError from "../errors/BadRequestError";
+import DatabaseError from "../errors/DatabaseError";
+import AuthenticationError from "../errors/AuthenticationError";
 
 // @desc Get a specific post and its comments if any
 // @route GET /api/posts/:postId
@@ -12,9 +19,9 @@ import { IPosts } from "../types/posts.type";
 const getPost = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const postId = req.params.id;
+
     if (!postId) {
-      res.status(401);
-      throw new Error("Post ID not found");
+      throw new BadRequestError("Post ID is required");
     }
 
     const post: IPosts | null = await Posts.findById(postId);
@@ -38,8 +45,7 @@ const getPost = asyncHandler(
         postData,
       });
     } else {
-      res.status(400);
-      throw new Error("Post not found");
+      throw new BadRequestError("Post not found");
     }
   }
 );
@@ -52,22 +58,19 @@ const createPost = asyncHandler(
     const { title, description }: IPosts = req.body;
 
     if (!title || !description) {
-      res.status(401);
-      throw new Error("Incomplete input");
+      throw new BadRequestError("Incomplete input");
     }
 
     const ownerId = req.user?.id;
 
     if (!ownerId) {
-      res.status(400);
-      throw new Error("User not found, kindly login again");
+      throw new AuthenticationError();
     }
 
     const owner = await User.findById(ownerId);
 
     if (!owner) {
-      res.status(400);
-      throw new Error("Invalid session, user not found");
+      throw new AuthenticationError();
     }
 
     const newPost = await Posts.create({
@@ -88,7 +91,7 @@ const createPost = asyncHandler(
         },
       });
     } else {
-      throw new Error("Unable to create new post");
+      throw new DatabaseError();
     }
   }
 );
@@ -102,26 +105,22 @@ const editPost = asyncHandler(
     const postId = req.params.id;
 
     if (!title || !description) {
-      res.status(400);
-      throw new Error("Incomplete input");
+      throw new BadRequestError("Incomplete input");
     }
 
     if (!postId) {
-      res.status(400);
-      throw new Error("Post ID not found");
+      throw new BadRequestError("Post ID not found");
     }
 
     const post: IPosts | null = await Posts.findById(postId);
 
     if (!post) {
-      res.status(400);
-      throw new Error("Post not found");
+      throw new BadRequestError("Post not found");
     }
 
     // Check if user is the owner
     if (post.ownerId != req.user?.id) {
-      res.status(401);
-      throw new Error("User not authorized to edit this post");
+      throw new AuthenticationError();
     }
 
     const updatedPost = await Posts.findByIdAndUpdate(
@@ -136,7 +135,7 @@ const editPost = asyncHandler(
         updatedPost,
       });
     } else {
-      throw new Error("Unable to update post");
+      throw new DatabaseError();
     }
   }
 );
@@ -149,27 +148,24 @@ const deletePost = asyncHandler(
     const postId = req.params.id;
 
     if (!postId) {
-      res.status(400);
-      throw new Error("Post ID not found");
+      throw new BadRequestError("Post ID not found");
     }
 
     // Get ID of Post's owner
     const ownerId = (await Posts.findById(postId))?.ownerId;
 
     if (!ownerId) {
-      res.status(400);
-      throw new Error("Post not found");
+      throw new BadRequestError("Post not found");
     }
 
     const sessionUserId = req.user?.id;
 
     if (!sessionUserId) {
-      throw new Error("Session invalid, please login again");
+      throw new AuthenticationError();
     }
 
     if (ownerId != sessionUserId) {
-      res.status(401);
-      throw new Error("User not authorized to delete this post");
+      throw new AuthenticationError();
     }
 
     const deletedPost = await Posts.findByIdAndDelete(postId);
@@ -197,7 +193,7 @@ const deletePost = asyncHandler(
         },
       });
     } else {
-      throw new Error("Post Deletion failed");
+      throw new DatabaseError();
     }
   }
 );
@@ -210,21 +206,19 @@ const likePost = asyncHandler(
     const postId = req.params.id;
 
     if (!postId) {
-      res.status(400);
-      throw new Error("Post ID not found");
+      throw new BadRequestError("Post ID not found");
     }
 
     const post = await Posts.findById(postId);
 
     if (!post) {
-      res.status(400);
-      throw new Error("Post not found");
+      throw new BadRequestError("Post not found");
     }
 
     const sessionUserId = req.user?.id;
 
     if (!sessionUserId) {
-      throw new Error("Session invalid, please login again");
+      throw new AuthenticationError();
     }
 
     // Determine if post is already liked by user or not
@@ -248,7 +242,7 @@ const likePost = asyncHandler(
       );
 
       if (!isSuccess) {
-        throw new Error("Unable to update User's likedPosts");
+        throw new DatabaseError();
       }
 
       res.status(200).json({
@@ -256,7 +250,7 @@ const likePost = asyncHandler(
         updatedPost,
       });
     } else {
-      throw new Error("Unable to like post");
+      throw new DatabaseError();
     }
   }
 );

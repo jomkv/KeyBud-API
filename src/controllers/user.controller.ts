@@ -1,8 +1,14 @@
+import User from "../models/user.model";
+import { IUser, IUserPayload } from "../types/user.type";
+
+// * Libraries
 import { Request, Response } from "express";
 import asyncHandler from "express-async-handler";
 import jwt from "jsonwebtoken";
-import User from "../models/user.model";
-import { IUser, IUserPayload } from "../types/user.type";
+
+// * Custom Errors
+import BadRequestError from "../errors/BadRequestError";
+import DatabaseError from "../errors/DatabaseError";
 
 // @desc Create new user
 // @route POST /api/auth/register
@@ -12,8 +18,7 @@ const registerUser = asyncHandler(
     const { username, password, email, switchType }: IUser = req.body;
     // Validate user input
     if (!username || !password || !email || !switchType) {
-      res.status(400);
-      throw new Error("Incomplete input");
+      throw new BadRequestError("Incomplete input");
     }
 
     // Check if Username / Email is taken
@@ -22,8 +27,7 @@ const registerUser = asyncHandler(
     });
 
     if (taken) {
-      res.status(400);
-      throw new Error("Username / Email already exists");
+      throw new BadRequestError("Username / Email already exists");
     }
 
     // Create user
@@ -44,7 +48,7 @@ const registerUser = asyncHandler(
         },
       });
     } else {
-      throw new Error("Unable to create new user");
+      throw new DatabaseError();
     }
   }
 );
@@ -58,8 +62,7 @@ const loginUser = asyncHandler(
 
     // Validate input
     if ((!username && !email) || !password) {
-      res.status(400);
-      throw new Error("Incomplete input");
+      throw new BadRequestError("Incomplete input");
     }
 
     // Find user
@@ -90,8 +93,7 @@ const loginUser = asyncHandler(
         token: token,
       });
     } else {
-      res.status(400);
-      throw new Error("Username/Email and Password does not match");
+      throw new BadRequestError("Username/Email and Password does not match");
     }
   }
 );
