@@ -1,4 +1,5 @@
 import express, { Application, Request, Response } from "express";
+import asyncHandler from "express-async-handler";
 import dotenv from "dotenv";
 import connectDB from "./config/db";
 import userRouter from "./routes/user.route";
@@ -13,6 +14,13 @@ app.use(express.urlencoded({ extended: false })); // allow destructuring of req.
 
 app.use("/api/auth", userRouter);
 app.use("/api/posts", postsRouter);
+
+app.all(
+  "*",
+  asyncHandler(() => {
+    throw new Error("This endpoint does not exist");
+  })
+);
 
 app.use(errorHandler);
 

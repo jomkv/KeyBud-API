@@ -1,6 +1,6 @@
-import { Request, Response, NextFunction } from "express";
+import { ErrorRequestHandler, Request, Response, NextFunction } from "express";
 
-const errorHandler = (
+const errorHandler: ErrorRequestHandler = (
   err: Error,
   req: Request,
   res: Response,
