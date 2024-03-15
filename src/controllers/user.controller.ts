@@ -34,8 +34,6 @@ const registerUser = asyncHandler(
     const salt = await bcrypt.genSalt(10);
     const encryptedPass = await bcrypt.hash(password, salt);
 
-    console.log(encryptedPass);
-
     // Create user
     const newUser = await User.create({
       username,
