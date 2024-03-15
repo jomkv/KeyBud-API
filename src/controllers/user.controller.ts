@@ -1,4 +1,5 @@
 import User from "../models/user.model";
+import bcrypt from "bcryptjs";
 import { IUser, IUserPayload } from "../types/user.type";
 
 // * Libraries
@@ -30,12 +31,17 @@ const registerUser = asyncHandler(
       throw new BadRequestError("Username / Email already exists");
     }
 
+    const salt = await bcrypt.genSalt(10);
+    const encryptedPass = await bcrypt.hash(password, salt);
+
+    console.log(encryptedPass);
+
     // Create user
     const newUser = await User.create({
       username,
       email,
       switchType,
-      password,
+      password: encryptedPass,
     });
 
     if (newUser) {
@@ -68,10 +74,12 @@ const loginUser = asyncHandler(
     // Find user
     const user = await User.findOne({
       $or: [{ username: username }, { email: email }],
-      password: password,
-    }).select("-password");
+    }); // exclude password from res
 
-    if (user) {
+    if (
+      user &&
+      (await bcrypt.compare(password, user.password)) // if password correct
+    ) {
       const userPayload: IUserPayload = {
         id: user._id,
         username: user.username,
