@@ -5,6 +5,7 @@ import {
   deletePost,
   editPost,
   likePost,
+  getManyPosts,
 } from "../controllers/posts.controller";
 import {
   getCommentWithPost,
@@ -21,7 +22,7 @@ import protect, {
 const router: Router = Router();
 
 // Posts
-router.route("/").post(protect, createPost);
+router.route("/").post(protect, createPost).get(getManyPosts);
 router
   .route("/:id")
   .get(processJwtTokenIfPresent, getPost)

@@ -13,6 +13,26 @@ import BadRequestError from "../errors/BadRequestError";
 import DatabaseError from "../errors/DatabaseError";
 import AuthenticationError from "../errors/AuthenticationError";
 
+// @desc Get multiple posts, used for home page
+// @route GET /api/posts/
+// @access Public
+const getManyPosts = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const posts = await Posts.find();
+
+    if (posts) {
+      console.log("works");
+
+      res.status(200).json({
+        message: "Successfuly fetched posts",
+        posts,
+      });
+    } else {
+      throw new DatabaseError();
+    }
+  }
+);
+
 // @desc Get a specific post and its comments if any
 // @route GET /api/posts/:postId
 // @access Public
@@ -283,4 +303,4 @@ const updateUserLikedPosts = async (
   return isSuccess;
 };
 
-export { createPost, getPost, deletePost, editPost, likePost };
+export { createPost, getPost, deletePost, editPost, likePost, getManyPosts };
