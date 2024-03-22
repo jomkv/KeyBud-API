@@ -18,11 +18,12 @@ import AuthenticationError from "../errors/AuthenticationError";
 // @access Public
 const getManyPosts = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const posts = await Posts.find();
+    const posts = await Posts.find().limit(5).populate({
+      path: "postedBy",
+      select: "username",
+    });
 
     if (posts) {
-      console.log("works");
-
       res.status(200).json({
         message: "Successfuly fetched posts",
         posts,
@@ -48,13 +49,13 @@ const getPost = asyncHandler(
 
     if (post) {
       // Find owner's username
-      const ownerName = await User.findById(post.ownerId);
+      const ownerName = await User.findById(post.postedBy);
 
       const postData = {
         title: post.title,
         description: post.description,
         owner: ownerName?.username || "Unknown Owner",
-        isOwner: post.ownerId == req.user?.id,
+        isOwner: post.postedBy == req.user?.id,
         comments: post.comments,
         isEditted: post.isEditted,
         likeCount: post.likeCount,
@@ -96,7 +97,7 @@ const createPost = asyncHandler(
     const newPost = await Posts.create({
       title: title,
       description: description,
-      ownerId: ownerId,
+      postedBy: ownerId,
     });
 
     if (newPost) {
@@ -107,7 +108,7 @@ const createPost = asyncHandler(
           title: newPost.title,
           description: newPost.description,
           owner: owner.username,
-          ownerId: newPost.ownerId,
+          postedBy: newPost.postedBy,
         },
       });
     } else {
@@ -139,7 +140,7 @@ const editPost = asyncHandler(
     }
 
     // Check if user is the owner
-    if (post.ownerId != req.user?.id) {
+    if (post.postedBy != req.user?.id) {
       throw new AuthenticationError();
     }
 
@@ -172,7 +173,7 @@ const deletePost = asyncHandler(
     }
 
     // Get ID of Post's owner
-    const ownerId = (await Posts.findById(postId))?.ownerId;
+    const ownerId = (await Posts.findById(postId))?.postedBy;
 
     if (!ownerId) {
       throw new BadRequestError("Post not found");
@@ -209,7 +210,7 @@ const deletePost = asyncHandler(
           postId: deletedPost._id,
           title: deletedPost.title,
           description: deletedPost.description,
-          ownerId: deletedPost.ownerId,
+          postedBy: deletedPost.postedBy,
         },
       });
     } else {
