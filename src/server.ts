@@ -3,6 +3,7 @@ import express, { Application } from "express";
 import asyncHandler from "express-async-handler";
 import dotenv from "dotenv";
 import cors from "cors";
+// import multer from "multer";
 
 // * Local Imports
 import connectDB from "./config/db";

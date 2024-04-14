@@ -115,11 +115,17 @@ const getUserProfile = asyncHandler(
 
 // @desc Set user's profile picture / icon
 // @route POST /api/user/:userId
-// @access Public
+// @access Private
 const setUserIcon = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
+    if (req.file) {
+      console.log(req.file);
+      console.log(req.body.test);
+    }
+
+    res.status(200).json({ message: "works" });
     // TODO
   }
 );
 
-export { registerUser, loginUser };
+export { registerUser, loginUser, setUserIcon };
