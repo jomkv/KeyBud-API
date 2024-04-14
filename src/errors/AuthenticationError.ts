@@ -7,6 +7,9 @@ export default class AuthenticationError extends CustomError {
   }
 
   serialize() {
-    return { message: "User not authorized", stack: this.stack };
+    return {
+      message: "User not authorized",
+      stack: process.env.NODE_ENV === "production" ? "" : this.stack,
+    };
   }
 }

@@ -7,6 +7,9 @@ export default class BadRequestError extends CustomError {
   }
 
   serialize() {
-    return { message: this.message, stack: this.stack };
+    return {
+      message: this.message,
+      stack: process.env.NODE_ENV === "production" ? "" : this.stack,
+    };
   }
 }

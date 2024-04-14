@@ -7,6 +7,9 @@ export default class DatabaseError extends CustomError {
   }
 
   serialize() {
-    return { message: "Database Error", stack: this.stack };
+    return {
+      message: "Database Error",
+      stack: process.env.NODE_ENV === "production" ? "" : this.stack,
+    };
   }
 }
