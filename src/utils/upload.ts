@@ -1,5 +1,6 @@
 import multer from "multer";
 import BadRequestError from "../errors/BadRequestError";
+import path from "path";
 import { Request } from "express";
 
 const storage = multer.diskStorage({
@@ -8,7 +9,7 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     // set file name to curr date + original file name
-    cb(null, Date().toString + file.originalname);
+    cb(null, Date.now() + file.originalname);
   },
 });
 

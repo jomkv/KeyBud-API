@@ -5,7 +5,7 @@ interface IUser {
   email: String;
   password: string;
   switchType: String;
-  icon?: Buffer;
+  iconURL?: String;
   likedPosts: Types.ObjectId[];
   likedComments: Types.ObjectId[];
 }
@@ -15,6 +15,7 @@ interface IUserPayload {
   username: String;
   switchType: String;
   email: String;
+  iconURL: String | null;
 }
 
 export { IUser, IUserPayload };

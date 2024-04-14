@@ -20,8 +20,8 @@ const userSchema: Schema = new Schema<IUser>({
     type: String,
     require: true,
   },
-  icon: {
-    type: Buffer,
+  iconURL: {
+    type: String,
     required: false,
   },
   likedPosts: [

@@ -1,11 +1,14 @@
 import User from "../models/User";
-import bcrypt from "bcryptjs";
 import { IUser, IUserPayload } from "../types/userType";
+import { uploadImage } from "../utils/cloudinary";
 
 // * Libraries
 import { Request, Response } from "express";
 import asyncHandler from "express-async-handler";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
+import mongoose from "mongoose";
+import { Types } from "mongoose";
 
 // * Custom Errors
 import BadRequestError from "../errors/BadRequestError";
@@ -83,6 +86,7 @@ const loginUser = asyncHandler(
         username: user.username,
         switchType: user.switchType,
         email: user.email,
+        iconURL: user.iconURL || null,
       };
 
       if (!process.env.JWT_SECRET) {
@@ -118,13 +122,40 @@ const getUserProfile = asyncHandler(
 // @access Private
 const setUserIcon = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    if (req.file) {
-      console.log(req.file);
-      console.log(req.body.test);
+    const filePath = req.file?.path;
+    const userId = req.params.userId;
+
+    if (!filePath) {
+      throw new BadRequestError("Image could not be found");
     }
 
-    res.status(200).json({ message: "works" });
-    // TODO
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      throw new BadRequestError("Invalid userId");
+    }
+
+    // upload image to cloudinary, returns null if fail
+    const imageUrl: String | null = await uploadImage(filePath);
+
+    if (!imageUrl) {
+      res.status(500);
+      throw new Error("Unable to upload user icon");
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        iconURL: imageUrl,
+      },
+      { new: true }
+    ).select("-password");
+
+    if (updatedUser) {
+      res
+        .status(201)
+        .json({ message: "Successfuly updated user icon", user: updatedUser });
+    } else {
+      throw new DatabaseError();
+    }
   }
 );
 
