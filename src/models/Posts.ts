@@ -1,5 +1,5 @@
 import mongoose, { Schema, Types, model } from "mongoose";
-import { IPosts } from "../types/posts.type";
+import { IPosts } from "../types/postsType";
 
 const postsSchema: Schema = new Schema<IPosts>({
   title: {
@@ -38,7 +38,6 @@ const postsSchema: Schema = new Schema<IPosts>({
   },
 });
 
-// Posts model
 const Posts = model<IPosts>("Posts", postsSchema);
 
 export default Posts;

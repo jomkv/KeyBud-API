@@ -1,7 +1,7 @@
-import Posts from "../models/posts.model";
-import Comment from "../models/comment.model";
-import User from "../models/user.model";
-import { IComment } from "../types/comment.type";
+import Posts from "../models/Posts";
+import Comment from "../models/Comment";
+import User from "../models/User";
+import { IComment } from "../types/commentType";
 
 // * Libraries
 import asyncHandler from "express-async-handler";

@@ -1,7 +1,7 @@
-import Posts from "../models/posts.model";
-import User from "../models/user.model";
-import Comment from "../models/comment.model";
-import { IPosts } from "../types/posts.type";
+import Posts from "../models/Posts";
+import User from "../models/User";
+import Comment from "../models/Comment";
+import { IPosts } from "../types/postsType";
 
 // * Libraries
 import { Request, Response } from "express";

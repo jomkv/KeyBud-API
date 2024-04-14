@@ -1,23 +1,26 @@
 // * Third party dependencies
-import express, { Application, Request, Response } from "express";
+import express, { Application } from "express";
 import asyncHandler from "express-async-handler";
 import dotenv from "dotenv";
 import cors from "cors";
 
 // * Local Imports
 import connectDB from "./config/db";
-import userRouter from "./routes/user.route";
-import postsRouter from "./routes/posts.route";
-import errorHandler from "./middlewares/error.middleware";
+import userRouter from "./routes/userRoute";
+import postsRouter from "./routes/postsRoute";
+import errorHandler from "./middlewares/error";
 
+// * App
 dotenv.config();
 const app: Application = express();
 const port: Number = Number(process.env.PORT);
 
+// * Middlewares
 app.use(cors());
 app.use(express.urlencoded({ extended: false })); // allow destructuring of req.body
 
-app.use("/api/auth", userRouter);
+// * Routes
+app.use("/api/user", userRouter);
 app.use("/api/posts", postsRouter);
 
 app.all(
@@ -35,4 +38,4 @@ connectDB().then(() => {
   });
 });
 
-export default app;
+// export default app;

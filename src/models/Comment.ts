@@ -1,5 +1,5 @@
 import mongoose, { Schema, Types, model } from "mongoose";
-import { IComment } from "../types/comment.type";
+import { IComment } from "../types/commentType";
 
 const commentSchema: Schema = new Schema<IComment>({
   comment: {
@@ -22,7 +22,6 @@ const commentSchema: Schema = new Schema<IComment>({
   },
 });
 
-// Posts model
 const Comment = model<IComment>("Comment", commentSchema);
 
 export default Comment;

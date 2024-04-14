@@ -1,6 +1,6 @@
-import User from "../models/user.model";
+import User from "../models/User";
 import bcrypt from "bcryptjs";
-import { IUser, IUserPayload } from "../types/user.type";
+import { IUser, IUserPayload } from "../types/userType";
 
 // * Libraries
 import { Request, Response } from "express";
@@ -12,7 +12,7 @@ import BadRequestError from "../errors/BadRequestError";
 import DatabaseError from "../errors/DatabaseError";
 
 // @desc Create new user
-// @route POST /api/auth/register
+// @route POST /user/auth/register
 // @access Public
 const registerUser = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
@@ -58,7 +58,7 @@ const registerUser = asyncHandler(
 );
 
 // @desc User login
-// @route POST /api/auth/login
+// @route POST /user/auth/login
 // @access Public
 const loginUser = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
@@ -72,7 +72,7 @@ const loginUser = asyncHandler(
     // Find user
     const user = await User.findOne({
       $or: [{ username: username }, { email: email }],
-    }); // exclude password from res
+    });
 
     if (
       user &&
@@ -105,10 +105,21 @@ const loginUser = asyncHandler(
 );
 
 // @desc Get user's profile (posts, username)
-// @route POST /api/profile/:userId
+// @route GET /api/user/:userId
 // @access Public
 const getUserProfile = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {}
+  async (req: Request, res: Response): Promise<void> => {
+    // TODO
+  }
+);
+
+// @desc Set user's profile picture / icon
+// @route POST /api/user/:userId
+// @access Public
+const setUserIcon = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    // TODO
+  }
 );
 
 export { registerUser, loginUser };

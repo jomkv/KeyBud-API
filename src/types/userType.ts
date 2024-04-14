@@ -5,6 +5,7 @@ interface IUser {
   email: String;
   password: string;
   switchType: String;
+  icon?: Buffer;
   likedPosts: Types.ObjectId[];
   likedComments: Types.ObjectId[];
 }

@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import asyncHandler from "express-async-handler";
 import { Request, Response, NextFunction } from "express";
-import { IUserPayload } from "../types/user.type";
+import { IUserPayload } from "../types/userType";
 
 // Extend Request interface to include user
 declare global {

@@ -6,7 +6,7 @@ import {
   editPost,
   likePost,
   getManyPosts,
-} from "../controllers/posts.controller";
+} from "../controllers/postsController";
 import {
   getCommentWithPost,
   createComment,
@@ -14,10 +14,8 @@ import {
   editComment,
   getComment,
   likeComment,
-} from "../controllers/comment.controller";
-import protect, {
-  processJwtTokenIfPresent,
-} from "../middlewares/auth.middleware";
+} from "../controllers/commentController";
+import protect, { processJwtTokenIfPresent } from "../middlewares/auth";
 
 const router: Router = Router();
 

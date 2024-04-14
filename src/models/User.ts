@@ -1,5 +1,5 @@
 import { Schema, Types, model } from "mongoose";
-import { IUser } from "../types/user.type";
+import { IUser } from "../types/userType";
 
 const userSchema: Schema = new Schema<IUser>({
   username: {
@@ -20,6 +20,10 @@ const userSchema: Schema = new Schema<IUser>({
     type: String,
     require: true,
   },
+  icon: {
+    type: Buffer,
+    required: false,
+  },
   likedPosts: [
     {
       type: Types.ObjectId,
@@ -36,7 +40,6 @@ const userSchema: Schema = new Schema<IUser>({
   ],
 });
 
-// user model
 const User = model<IUser>("User", userSchema);
 
 export default User;
