@@ -6,7 +6,7 @@ import {
   setUserIcon,
 } from "../controllers/userController";
 
-import protect from "../middlewares/auth";
+import { protect } from "../middlewares/auth";
 import upload from "../utils/upload";
 
 const router: Router = Router();

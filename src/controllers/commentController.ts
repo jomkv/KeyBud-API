@@ -16,44 +16,45 @@ import AuthenticationError from "../errors/AuthenticationError";
 // @desc Get a comment from a specific post
 // @route GET /api/posts/:postId/comment/:commentId
 // @access Public
-const getCommentWithPost = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {
-    const { postId, commentId } = req.params;
 
-    const parentPost = await Posts.findById(postId);
-    const comment = await Comment.findById(commentId);
+// const getCommentWithPost = asyncHandler(
+//   async (req: Request, res: Response): Promise<void> => {
+//     const { postId, commentId } = req.params;
 
-    if (!parentPost && !comment) {
-      throw new BadRequestError("Both Post and Comment not found");
-    } else if (!parentPost) {
-      throw new BadRequestError("Post not found");
-    } else if (!comment) {
-      throw new BadRequestError("Comment not found");
-    }
+//     const parentPost = await Posts.findById(postId);
+//     const comment = await Comment.findById(commentId);
 
-    const commentPayload = {
-      postTitle: parentPost.title,
-      postDescription: parentPost.description,
-      postLikes: parentPost.likeCount,
-      isPostOwner: parentPost.postedBy == req.user?.id,
-      comment: comment.comment,
-      commentLikes: comment.likeCount,
-      isCommentOwner: comment.ownerId == req.user?.id,
-    };
+//     if (!parentPost && !comment) {
+//       throw new BadRequestError("Both Post and Comment not found");
+//     } else if (!parentPost) {
+//       throw new BadRequestError("Post not found");
+//     } else if (!comment) {
+//       throw new BadRequestError("Comment not found");
+//     }
 
-    res.status(200).json({
-      message: "Comment found",
-      comment: commentPayload,
-    });
-  }
-);
+//     const commentPayload = {
+//       postTitle: parentPost.title,
+//       postDescription: parentPost.description,
+//       postLikes: parentPost.likeCount,
+//       isPostOwner: parentPost.postedBy == req.user?.id,
+//       comment: comment.comment,
+//       commentLikes: comment.likeCount,
+//       isCommentOwner: comment.ownerId == req.user?.id,
+//     };
+
+//     res.status(200).json({
+//       message: "Comment found",
+//       comment: commentPayload,
+//     });
+//   }
+// );
 
 // @desc Get a comment
-// @route GET /api/posts//comment/:commentId
+// @route GET /api/comment/:id
 // @access Public
 const getComment = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const commentId = req.params.commentId;
+    const commentId = req.params.id;
 
     const comment: IComment | null = await Comment.findById(commentId);
 
@@ -76,28 +77,16 @@ const getComment = asyncHandler(
 );
 
 // @desc create a comment
-// @route POST /api/posts/:postId/comment
+// @route POST /api/posts/:id/comment
 // @access Private
 const createComment = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const postId = req.params.postId;
-
-    if (!postId) {
-      throw new BadRequestError(
-        "'postId' is a required parameter. Make sure it is provided in the request"
-      );
-    }
+    const postId = req.params.id;
 
     const { comment } = req.body;
 
     if (!comment) {
-      throw new BadRequestError("Comment not found");
-    }
-
-    const repliesTo = await Posts.findById(postId);
-
-    if (!repliesTo) {
-      throw new BadRequestError("Post not found");
+      throw new BadRequestError("Incomplete input. Comment missing");
     }
 
     // Create comment
@@ -134,22 +123,11 @@ const createComment = asyncHandler(
 );
 
 // @desc Delete a comment
-// @route DELETE /api/posts/comment/:commentId
+// @route DELETE /api/comment/:id
 // @access Private
 const deleteComment = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const commentId = req.params.commentId;
-
-    const comment = await Comment.findById(commentId);
-
-    if (!comment) {
-      throw new BadRequestError("Invalid commentId, Comment not found");
-    }
-
-    // Check if owner
-    if (comment.ownerId != req.user?.id) {
-      throw new AuthenticationError();
-    }
+    const commentId = req.params.id;
 
     const deletedComment = await Comment.findByIdAndDelete(commentId);
     if (deletedComment) {
@@ -167,7 +145,7 @@ const deleteComment = asyncHandler(
 );
 
 // @desc Edit a comment
-// @route PUT /api/posts/comment/:commentId
+// @route PUT /api/comment/:id
 // @access Private
 const editComment = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
@@ -175,22 +153,7 @@ const editComment = asyncHandler(
     const commentId = req.params.id;
 
     if (!comment) {
-      throw new BadRequestError("Incomplete input");
-    }
-
-    if (!commentId) {
-      throw new BadRequestError("Comment ID not found");
-    }
-
-    const commentFound: IComment | null = await Posts.findById(commentId);
-
-    if (!commentFound) {
-      throw new BadRequestError("Comment not found");
-    }
-
-    // Check if user is the owner
-    if (commentFound.ownerId != req.user?.id) {
-      throw new AuthenticationError();
+      throw new BadRequestError("Incomplete input. Comment missing");
     }
 
     const updatedComment = await Comment.findByIdAndUpdate(
@@ -216,31 +179,16 @@ const editComment = asyncHandler(
 );
 
 // @desc Likes/Unlikes a comment
-// @route PUT /api/posts/comment/:commentId/like
+// @route PUT /api/comment/:id/like
 // @access Private
 const likeComment = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const commentId = req.params.commentId;
-
-    if (!commentId) {
-      throw new BadRequestError("Comment ID not found");
-    }
-
-    const comment: IComment | null = await Comment.findById(commentId);
-
-    if (!comment) {
-      throw new BadRequestError("Comment not found");
-    }
-
-    const sessionUserId = req.user?.id;
-
-    if (!sessionUserId) {
-      throw new AuthenticationError();
-    }
+    const commentId = req.params.id;
+    const userId = req.user?.id;
 
     // Determine if comment is already liked by user or not
     const isLiked = (await User.findOne({
-      $and: [{ _id: sessionUserId }, { likedComments: { $in: [commentId] } }],
+      $and: [{ _id: userId }, { likedComments: { $in: [commentId] } }],
     }))
       ? true
       : false;
@@ -253,7 +201,7 @@ const likeComment = asyncHandler(
 
     if (updatedComment) {
       const isSuccess: boolean = await updateUserLikedComments(
-        sessionUserId,
+        userId,
         commentId,
         !isLiked
       );
@@ -273,7 +221,7 @@ const likeComment = asyncHandler(
 );
 
 const updateUserLikedComments = async (
-  userId: Types.ObjectId,
+  userId: Types.ObjectId | undefined,
   commentId: string,
   like: boolean // true for like, false for unlike
 ): Promise<boolean> => {
@@ -303,11 +251,4 @@ const updateUserLikedComments = async (
   return isSuccess;
 };
 
-export {
-  createComment,
-  getCommentWithPost,
-  deleteComment,
-  editComment,
-  getComment,
-  likeComment,
-};
+export { createComment, deleteComment, editComment, getComment, likeComment };

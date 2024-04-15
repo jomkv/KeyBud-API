@@ -1,9 +1,12 @@
+// * Third party dependencies
 import jwt from "jsonwebtoken";
 import asyncHandler from "express-async-handler";
 import { Request, Response, NextFunction } from "express";
+
+// * Local imports
 import { IUserPayload } from "../types/userType";
 
-// Extend Request interface to include user
+// * Extend Request interface to include user
 declare global {
   namespace Express {
     interface Request {
@@ -12,10 +15,17 @@ declare global {
   }
 }
 
+/**
+ * Checks req headers if JWT is provided
+ *
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @param {import('express').NextFunction} next - The Express next middleware function.
+ * @throws {Error} Throws an error JWT is not valid or if JWT not provided.
+ */
 const protect = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     // Check if header or jwt exists
-
     const auth = req.header("Authorization");
     if (!auth || !auth.startsWith("Bearer ")) {
       res.status(400);
@@ -56,8 +66,16 @@ const protect = asyncHandler(
   }
 );
 
-// @desc Used for routes that are public. Will process JWT token if possible and set it to req.user
-const processJwtTokenIfPresent = asyncHandler(
+/**
+ * Processes JWT from headers if possible,
+ * but will not throw an error if JWT not provided
+ *
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @param {import('express').NextFunction} next - The Express next middleware function.
+ * @throws {Error} Does not interrupt req if error is catched
+ */
+const optionalJwt = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const auth = req.header("Authorization");
     if (auth && auth.startsWith("Bearer ")) {
@@ -83,5 +101,4 @@ const processJwtTokenIfPresent = asyncHandler(
   }
 );
 
-export default protect;
-export { processJwtTokenIfPresent };
+export { protect, optionalJwt };

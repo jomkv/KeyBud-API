@@ -7,9 +7,10 @@ import cors from "cors";
 
 // * Local Imports
 import connectDB from "./config/db";
+import errorHandler from "./middlewares/error";
 import userRouter from "./routes/userRoute";
 import postsRouter from "./routes/postsRoute";
-import errorHandler from "./middlewares/error";
+import commentRouter from "./routes/commentRoutes";
 
 // * App
 dotenv.config();
@@ -23,6 +24,7 @@ app.use(express.urlencoded({ extended: false })); // allow destructuring of req.
 // * Routes
 app.use("/api/user", userRouter);
 app.use("/api/posts", postsRouter);
+app.use("/api/comment", commentRouter);
 
 app.all(
   "*",

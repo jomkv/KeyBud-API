@@ -41,10 +41,6 @@ const getPost = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const postId = req.params.id;
 
-    if (!postId) {
-      throw new BadRequestError("Post ID is required");
-    }
-
     const post: IPosts | null = await Posts.findById(postId);
 
     if (post) {
@@ -84,15 +80,7 @@ const createPost = asyncHandler(
 
     const ownerId = req.user?.id;
 
-    if (!ownerId) {
-      throw new AuthenticationError();
-    }
-
     const owner = await User.findById(ownerId);
-
-    if (!owner) {
-      throw new AuthenticationError();
-    }
 
     const newPost = await Posts.create({
       title: title,
@@ -107,7 +95,7 @@ const createPost = asyncHandler(
           postId: newPost._id,
           title: newPost.title,
           description: newPost.description,
-          owner: owner.username,
+          owner: owner?.username,
           postedBy: newPost.postedBy,
         },
       });
@@ -129,19 +117,10 @@ const editPost = asyncHandler(
       throw new BadRequestError("Incomplete input");
     }
 
-    if (!postId) {
-      throw new BadRequestError("Post ID not found");
-    }
-
     const post: IPosts | null = await Posts.findById(postId);
 
     if (!post) {
       throw new BadRequestError("Post not found");
-    }
-
-    // Check if user is the owner
-    if (post.postedBy != req.user?.id) {
-      throw new AuthenticationError();
     }
 
     const updatedPost = await Posts.findByIdAndUpdate(
@@ -167,27 +146,6 @@ const editPost = asyncHandler(
 const deletePost = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const postId = req.params.id;
-
-    if (!postId) {
-      throw new BadRequestError("Post ID not found");
-    }
-
-    // Get ID of Post's owner
-    const ownerId = (await Posts.findById(postId))?.postedBy;
-
-    if (!ownerId) {
-      throw new BadRequestError("Post not found");
-    }
-
-    const sessionUserId = req.user?.id;
-
-    if (!sessionUserId) {
-      throw new AuthenticationError();
-    }
-
-    if (ownerId != sessionUserId) {
-      throw new AuthenticationError();
-    }
 
     const deletedPost = await Posts.findByIdAndDelete(postId);
 
@@ -230,21 +188,11 @@ const likePost = asyncHandler(
       throw new BadRequestError("Post ID not found");
     }
 
-    const post = await Posts.findById(postId);
-
-    if (!post) {
-      throw new BadRequestError("Post not found");
-    }
-
-    const sessionUserId = req.user?.id;
-
-    if (!sessionUserId) {
-      throw new AuthenticationError();
-    }
+    const userId = req.user?.id;
 
     // Determine if post is already liked by user or not
     const isLiked = (await User.findOne({
-      $and: [{ _id: sessionUserId }, { likedPosts: { $in: [postId] } }],
+      $and: [{ _id: userId }, { likedPosts: { $in: [postId] } }],
     }))
       ? true
       : false;
@@ -257,7 +205,7 @@ const likePost = asyncHandler(
 
     if (updatedPost) {
       const isSuccess: boolean = await updateUserLikedPosts(
-        sessionUserId,
+        userId,
         postId,
         !isLiked
       );
@@ -277,7 +225,7 @@ const likePost = asyncHandler(
 );
 
 const updateUserLikedPosts = async (
-  userId: Types.ObjectId,
+  userId: Types.ObjectId | undefined,
   postId: string,
   like: boolean // true for like, false for unlike
 ): Promise<boolean> => {
