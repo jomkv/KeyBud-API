@@ -27,7 +27,7 @@ const postOwnerValidate = asyncHandler(
       throw new BadRequestError("Invalid postId, post not found");
     }
 
-    if (post.postedBy != req.user?.id) {
+    if (post.ownerId != req.user?.id) {
       throw new AuthenticationError();
     }
 

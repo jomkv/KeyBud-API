@@ -19,7 +19,7 @@ import AuthenticationError from "../errors/AuthenticationError";
 const getManyPosts = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const posts = await Posts.find().limit(5).populate({
-      path: "postedBy",
+      path: "ownerId",
       select: "username",
     });
 
@@ -35,7 +35,7 @@ const getManyPosts = asyncHandler(
 );
 
 // @desc Get a specific post and its comments if any
-// @route GET /api/posts/:postId
+// @route GET /api/posts/:id
 // @access Public
 const getPost = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
@@ -45,13 +45,13 @@ const getPost = asyncHandler(
 
     if (post) {
       // Find owner's username
-      const ownerName = await User.findById(post.postedBy);
+      const ownerName = await User.findById(post.ownerId);
 
       const postData = {
         title: post.title,
         description: post.description,
         owner: ownerName?.username || "Unknown Owner",
-        isOwner: post.postedBy == req.user?.id,
+        isOwner: post.ownerId == req.user?.id,
         comments: post.comments,
         isEditted: post.isEditted,
         likeCount: post.likeCount,
@@ -85,7 +85,7 @@ const createPost = asyncHandler(
     const newPost = await Posts.create({
       title: title,
       description: description,
-      postedBy: ownerId,
+      ownerId: ownerId,
     });
 
     if (newPost) {
@@ -96,7 +96,7 @@ const createPost = asyncHandler(
           title: newPost.title,
           description: newPost.description,
           owner: owner?.username,
-          postedBy: newPost.postedBy,
+          ownerId: newPost.ownerId,
         },
       });
     } else {
@@ -168,7 +168,7 @@ const deletePost = asyncHandler(
           postId: deletedPost._id,
           title: deletedPost.title,
           description: deletedPost.description,
-          postedBy: deletedPost.postedBy,
+          ownerId: deletedPost.ownerId,
         },
       });
     } else {
