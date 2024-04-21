@@ -15,10 +15,12 @@ const postsSchema: Schema = new Schema<IPosts>({
     ref: "User",
     required: true,
   },
-  image: {
-    type: Buffer,
-    required: false,
-  },
+  imageUrls: [
+    {
+      type: String,
+      required: false,
+    },
+  ],
   comments: [
     {
       type: Types.ObjectId,

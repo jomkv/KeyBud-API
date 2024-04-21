@@ -1,5 +1,6 @@
 import { v2 as cloudinary } from "cloudinary";
 import dotenv from "dotenv";
+import DatabaseError from "../errors/DatabaseError";
 dotenv.config();
 
 cloudinary.config({
@@ -21,7 +22,7 @@ export const uploadImage = async (imagePath: string) => {
     const res = await cloudinary.uploader.upload(imagePath, options);
     return res.url;
   } catch (err) {
-    return null;
+    throw new DatabaseError();
   }
 };
 

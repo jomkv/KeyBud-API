@@ -15,7 +15,7 @@ import BadRequestError from "../errors/BadRequestError";
 import DatabaseError from "../errors/DatabaseError";
 
 // @desc Create new user
-// @route POST /user/auth/register
+// @route POST /api/user/register
 // @access Public
 const registerUser = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
@@ -61,7 +61,7 @@ const registerUser = asyncHandler(
 );
 
 // @desc User login
-// @route POST /user/auth/login
+// @route POST /api/user/login
 // @access Public
 const loginUser = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
@@ -133,8 +133,8 @@ const setUserIcon = asyncHandler(
       throw new BadRequestError("Invalid userId");
     }
 
-    // upload image to cloudinary, returns null if fail
-    const imageUrl: String | null = await uploadImage(filePath);
+    // upload image to cloudinary
+    const imageUrl: String = await uploadImage(filePath);
 
     if (!imageUrl) {
       res.status(500);

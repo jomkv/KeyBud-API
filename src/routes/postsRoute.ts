@@ -14,11 +14,15 @@ import { createComment } from "../controllers/commentController";
 import { protect, optionalJwt } from "../middlewares/auth";
 import checkObjectId from "../middlewares/checkObjectId";
 import { postOwnerValidate } from "../middlewares/ownerValidate";
+import upload from "../utils/upload";
 
 const router: Router = Router();
 
 // * Posts
-router.route("/").post(protect, createPost).get(getManyPosts);
+router
+  .route("/")
+  .post(protect, upload.array("images", 2), createPost)
+  .get(getManyPosts);
 router
   .route("/:id")
   .get(checkObjectId, optionalJwt, getPost)

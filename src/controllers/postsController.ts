@@ -2,6 +2,7 @@ import Posts from "../models/Posts";
 import User from "../models/User";
 import Comment from "../models/Comment";
 import { IPosts } from "../types/postsType";
+import { uploadImage } from "../utils/cloudinary";
 
 // * Libraries
 import { Request, Response } from "express";
@@ -55,6 +56,7 @@ const getPost = asyncHandler(
         comments: post.comments,
         isEditted: post.isEditted,
         likeCount: post.likeCount,
+        imageUrls: post.imageUrls,
       };
 
       res.status(200).json({
@@ -73,10 +75,19 @@ const getPost = asyncHandler(
 const createPost = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { title, description }: IPosts = req.body;
+    const rawFile: any = req.files;
 
     if (!title || !description) {
       throw new BadRequestError("Incomplete input");
     }
+
+    // Filter req.files to get only the image paths
+    const imagePaths: string[] = rawFile.map((file: any) => file.path);
+
+    // upload images to cloudinary
+    const imageUrls: string[] = await Promise.all(
+      imagePaths.map(async (path: string) => uploadImage(path))
+    );
 
     const ownerId = req.user?.id;
 
@@ -86,6 +97,7 @@ const createPost = asyncHandler(
       title: title,
       description: description,
       ownerId: ownerId,
+      imageUrls: imageUrls,
     });
 
     if (newPost) {
@@ -95,6 +107,7 @@ const createPost = asyncHandler(
           postId: newPost._id,
           title: newPost.title,
           description: newPost.description,
+          imageUrls: imageUrls,
           owner: owner?.username,
           ownerId: newPost.ownerId,
         },
