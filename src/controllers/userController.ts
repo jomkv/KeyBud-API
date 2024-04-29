@@ -1,5 +1,5 @@
 import User from "../models/User";
-import { IUser, IUserPayload } from "../types/userType";
+import { IUser, IUserPayload } from "../@types/userType";
 import { uploadImage } from "../utils/cloudinary";
 
 // * Libraries

@@ -1,5 +1,5 @@
 import mongoose, { Schema, Types, model } from "mongoose";
-import { IPosts } from "../types/postsType";
+import { IPosts } from "../@types/postsType";
 
 const postsSchema: Schema = new Schema<IPosts>({
   title: {

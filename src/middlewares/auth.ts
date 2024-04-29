@@ -4,7 +4,7 @@ import asyncHandler from "express-async-handler";
 import { Request, Response, NextFunction } from "express";
 
 // * Local imports
-import { IUserPayload } from "../types/userType";
+import { IUserPayload } from "../@types/userType";
 
 // * Extend Request interface to include user
 declare global {

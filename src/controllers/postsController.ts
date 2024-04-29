@@ -1,7 +1,7 @@
 import Posts from "../models/Posts";
 import User from "../models/User";
 import Comment from "../models/Comment";
-import { IPosts } from "../types/postsType";
+import { IPosts } from "../@types/postsType";
 import { uploadImage } from "../utils/cloudinary";
 
 // * Libraries
@@ -81,13 +81,17 @@ const createPost = asyncHandler(
       throw new BadRequestError("Incomplete input");
     }
 
-    // Filter req.files to get only the image paths
-    const imagePaths: string[] = rawFile.map((file: any) => file.path);
+    let imageUrls: string[] = [];
 
-    // upload images to cloudinary
-    const imageUrls: string[] = await Promise.all(
-      imagePaths.map(async (path: string) => uploadImage(path))
-    );
+    if (rawFile) {
+      // Filter req.files to get only the image paths
+      const imagePaths: string[] = rawFile.map((file: any) => file.path);
+
+      // upload images to cloudinary
+      imageUrls = await Promise.all(
+        imagePaths.map(async (path: string) => uploadImage(path))
+      );
+    }
 
     const ownerId = req.user?.id;
 
