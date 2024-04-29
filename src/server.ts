@@ -11,6 +11,7 @@ import errorHandler from "./middlewares/error";
 import userRouter from "./routes/userRoute";
 import postsRouter from "./routes/postsRoute";
 import commentRouter from "./routes/commentRoutes";
+import messageRouter from "./routes/messageRoutes";
 
 // * App
 dotenv.config();
@@ -25,6 +26,7 @@ app.use(express.urlencoded({ extended: false })); // allow destructuring of req.
 app.use("/api/user", userRouter);
 app.use("/api/posts", postsRouter);
 app.use("/api/comment", commentRouter);
+app.use("/api/message", messageRouter);
 
 app.all(
   "*",

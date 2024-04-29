@@ -129,10 +129,6 @@ const setUserIcon = asyncHandler(
       throw new BadRequestError("Image could not be found");
     }
 
-    if (!mongoose.Types.ObjectId.isValid(userId)) {
-      throw new BadRequestError("Invalid userId");
-    }
-
     // upload image to cloudinary
     const imageUrl: String = await uploadImage(filePath);
 
