@@ -61,4 +61,29 @@ const createMessage = asyncHandler(
   }
 );
 
-export { createMessage };
+// @desc Gets the messages between the current user and the receiver
+// @route GET /api/message/:receiverId
+// @access Private
+const getMessages = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const receiverId = req.params.id;
+    const senderId = req.user?.id;
+
+    const conversation = await Conversation.findOne({
+      participants: { $all: [senderId, receiverId] },
+    }).populate("messages");
+
+    if (conversation) {
+      res.status(200).json({
+        message: "Conversation found",
+        messages: conversation.messages,
+      });
+    } else {
+      res.status(200).json({
+        message: "No conversation found between these users",
+      });
+    }
+  }
+);
+
+export { createMessage, getMessages };
