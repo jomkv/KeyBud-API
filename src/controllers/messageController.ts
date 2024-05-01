@@ -58,7 +58,6 @@ const createMessage = asyncHandler(
     } else {
       throw new DatabaseError();
     }
-    // * TODO
   }
 );
 

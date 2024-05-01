@@ -134,12 +134,6 @@ const editPost = asyncHandler(
       throw new BadRequestError("Incomplete input");
     }
 
-    const post: IPosts | null = await Posts.findById(postId);
-
-    if (!post) {
-      throw new BadRequestError("Post not found");
-    }
-
     const updatedPost = await Posts.findByIdAndUpdate(
       postId,
       { title, description, isEditted: true },
@@ -200,11 +194,6 @@ const deletePost = asyncHandler(
 const likePost = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const postId = req.params.id;
-
-    if (!postId) {
-      throw new BadRequestError("Post ID not found");
-    }
-
     const userId = req.user?.id;
 
     // Determine if post is already liked by user or not
