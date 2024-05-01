@@ -1,6 +1,7 @@
 import mongoose, { Schema, model } from "mongoose";
+import { IConversation } from "../@types/messageType";
 
-const conversationSchema: Schema = new Schema(
+const conversationSchema: Schema = new Schema<IConversation>(
   {
     participants: [
       {
@@ -20,6 +21,6 @@ const conversationSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-const Conversation = model("Conversation", conversationSchema);
+const Conversation = model<IConversation>("Conversation", conversationSchema);
 
 export default Conversation;
