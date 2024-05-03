@@ -19,10 +19,13 @@ import AuthenticationError from "../errors/AuthenticationError";
 // @access Public
 const getManyPosts = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const posts = await Posts.find().limit(5).populate({
-      path: "ownerId",
-      select: "username",
-    });
+    const posts = await Posts.find()
+      .sort({ createdAt: -1 }) // sort descending
+      .limit(10)
+      .populate({
+        path: "ownerId",
+        select: "username",
+      });
 
     if (posts) {
       res.status(200).json({

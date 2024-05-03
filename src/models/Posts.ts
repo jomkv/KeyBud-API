@@ -1,44 +1,47 @@
 import mongoose, { Schema, Types, model } from "mongoose";
 import { IPosts } from "../@types/postsType";
 
-const postsSchema: Schema = new Schema<IPosts>({
-  title: {
-    type: String,
-    required: true,
-  },
-  description: {
-    type: String,
-    required: true,
-  },
-  ownerId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-  imageUrls: [
-    {
+const postsSchema: Schema = new Schema<IPosts>(
+  {
+    title: {
       type: String,
-      required: false,
+      required: true,
     },
-  ],
-  comments: [
-    {
-      type: Types.ObjectId,
-      ref: "Comment",
-      required: false,
+    description: {
+      type: String,
+      required: true,
     },
-  ],
-  isEditted: {
-    type: Boolean,
-    required: false,
-    default: false,
+    ownerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    imageUrls: [
+      {
+        type: String,
+        required: false,
+      },
+    ],
+    comments: [
+      {
+        type: Types.ObjectId,
+        ref: "Comment",
+        required: false,
+      },
+    ],
+    isEditted: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    likeCount: {
+      type: Number,
+      required: false,
+      default: 0,
+    },
   },
-  likeCount: {
-    type: Number,
-    required: false,
-    default: 0,
-  },
-});
+  { timestamps: true }
+);
 
 const Posts = model<IPosts>("Posts", postsSchema);
 

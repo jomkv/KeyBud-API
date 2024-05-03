@@ -86,4 +86,26 @@ const getMessages = asyncHandler(
   }
 );
 
+// @desc Gets the all of the user's existing conversation(s)
+// @route GET /api/message/
+// @access Private
+const getUserConversations = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    //   const senderId = req.user?.id;
+    //   const conversation = await Conversation.findOne({
+    //     participants: {$},
+    //   }).populate("messages");
+    //   if (conversation) {
+    //     res.status(200).json({
+    //       message: "Conversation found",
+    //       messages: conversation.messages,
+    //     });
+    //   } else {
+    //     res.status(200).json({
+    //       message: "No conversation found between these users",
+    //     });
+    //   }
+  }
+);
+
 export { createMessage, getMessages };
