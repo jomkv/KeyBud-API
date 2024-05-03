@@ -1,6 +1,10 @@
 import { Router } from "express";
 
-import { createMessage, getMessages } from "../controllers/messageController";
+import {
+  createMessage,
+  getMessages,
+  getUserConversations,
+} from "../controllers/messageController";
 
 // * Middlewares
 import { protect, optionalJwt } from "../middlewares/auth";
@@ -10,5 +14,6 @@ const router: Router = Router();
 
 router.route("/send/:id").post(checkObjectId, protect, createMessage);
 router.route("/:id").get(checkObjectId, protect, getMessages);
+router.route("/").get(protect, getUserConversations);
 
 export default router;

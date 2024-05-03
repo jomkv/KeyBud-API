@@ -91,21 +91,23 @@ const getMessages = asyncHandler(
 // @access Private
 const getUserConversations = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    //   const senderId = req.user?.id;
-    //   const conversation = await Conversation.findOne({
-    //     participants: {$},
-    //   }).populate("messages");
-    //   if (conversation) {
-    //     res.status(200).json({
-    //       message: "Conversation found",
-    //       messages: conversation.messages,
-    //     });
-    //   } else {
-    //     res.status(200).json({
-    //       message: "No conversation found between these users",
-    //     });
-    //   }
+    const userId = req.user?.id;
+
+    const conversation = await Conversation.find({
+      participants: userId,
+    }).populate("messages");
+
+    if (conversation) {
+      res.status(200).json({
+        message: "Conversation found",
+        conversations: conversation,
+      });
+    } else {
+      res.status(200).json({
+        message: "No conversation found for this user",
+      });
+    }
   }
 );
 
-export { createMessage, getMessages };
+export { createMessage, getMessages, getUserConversations };
