@@ -123,7 +123,7 @@ const getUserProfile = asyncHandler(
 const setUserIcon = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const filePath = req.file?.path;
-    const userId = req.params.userId;
+    const userId = req.params.id;
 
     if (!filePath) {
       throw new BadRequestError("Image could not be found");
@@ -131,11 +131,6 @@ const setUserIcon = asyncHandler(
 
     // upload image to cloudinary
     const imageUrl: String = await uploadImage(filePath);
-
-    if (!imageUrl) {
-      res.status(500);
-      throw new Error("Unable to upload user icon");
-    }
 
     const updatedUser = await User.findByIdAndUpdate(
       userId,

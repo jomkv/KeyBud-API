@@ -15,7 +15,7 @@ const router: Router = Router();
 router.route("/register").post(registerUser);
 router.route("/login").post(loginUser);
 router
-  .route("/:userId")
+  .route("/:id")
   .post(checkObjectId, protect, upload.single("userIcon"), setUserIcon);
 
 export default router;
