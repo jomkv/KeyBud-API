@@ -1,5 +1,6 @@
 import mongoose, { Schema, Types, model } from "mongoose";
 import { IPosts } from "../@types/postsType";
+// import photoSchema from "./schemas/photoSchema";
 
 const postsSchema: Schema = new Schema<IPosts>(
   {

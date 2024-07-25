@@ -18,7 +18,7 @@ export const uploadImage = async (imagePath: string) => {
   };
 
   try {
-    // Make req to cloudinary's api to upload image
+    // TODO : Upload from buffer
     const res = await cloudinary.uploader.upload(imagePath, options);
     return res.url;
   } catch (err) {

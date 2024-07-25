@@ -3,19 +3,14 @@ import BadRequestError from "../errors/BadRequestError";
 import path from "path";
 import { Request } from "express";
 
-const storage = multer.diskStorage({
-  destination: (req: Request, file, cb) => {
-    cb(null, "./uploads/");
-  },
-  filename: (req, file, cb) => {
-    // set file name to curr date + original file name
-    cb(null, Date.now() + file.originalname);
-  },
-});
+const storage = multer.memoryStorage();
 
 const fileFilter = (req: Request, file: any, cb: any) => {
-  // TODO: check for other images instead of just jpeg
-  if (file.mimetype === "image/jpeg") {
+  if (
+    file.mimetype === "image/jpeg" ||
+    file.mimetype === "image/jpg" ||
+    file.mimetype === "image/png"
+  ) {
     cb(null, true);
   } else {
     cb(new BadRequestError("Invalid image file"), false);
