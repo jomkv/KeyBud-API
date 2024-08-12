@@ -1,6 +1,7 @@
-import { v2 as cloudinary } from "cloudinary";
+import { v2 as cloudinary, UploadApiResponse } from "cloudinary";
 import dotenv from "dotenv";
 import DatabaseError from "../errors/DatabaseError";
+import IPhoto from "../@types/photoType";
 dotenv.config();
 
 cloudinary.config({
@@ -10,7 +11,7 @@ cloudinary.config({
   secure: true, // use https
 });
 
-export const uploadImage = async (imagePath: string) => {
+export const uploadImage = async (imageBuffer: Buffer) => {
   const options = {
     use_filename: true,
     unique_filename: false,
@@ -18,9 +19,24 @@ export const uploadImage = async (imagePath: string) => {
   };
 
   try {
-    // TODO : Upload from buffer
-    const res = await cloudinary.uploader.upload(imagePath, options);
-    return res.url;
+    // Upload using buffer
+    return await new Promise((resolve, reject) =>
+      // * TODO: apply options
+      cloudinary.uploader
+        .upload_stream((error, res: UploadApiResponse) => {
+          if (error) {
+            throw new DatabaseError();
+          }
+
+          const photo: IPhoto = {
+            url: res.url,
+            id: res.public_id,
+          };
+
+          return resolve(photo);
+        })
+        .end(imageBuffer)
+    );
   } catch (err) {
     throw new DatabaseError();
   }

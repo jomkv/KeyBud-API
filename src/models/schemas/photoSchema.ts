@@ -1,9 +1,5 @@
 import { Schema } from "mongoose";
-
-interface IPhoto {
-  url: string;
-  id: string;
-}
+import IPhoto from "../../@types/photoType";
 
 const photoSchema: Schema = new Schema<IPhoto>(
   {
