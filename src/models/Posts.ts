@@ -1,6 +1,6 @@
 import mongoose, { Schema, Types, model } from "mongoose";
 import { IPosts } from "../@types/postsType";
-// import photoSchema from "./schemas/photoSchema";
+import photoSchema from "./schemas/photoSchema";
 
 const postsSchema: Schema = new Schema<IPosts>(
   {
@@ -17,12 +17,11 @@ const postsSchema: Schema = new Schema<IPosts>(
       ref: "User",
       required: true,
     },
-    imageUrls: [
-      {
-        type: String,
-        required: false,
-      },
-    ],
+    images: {
+      type: [photoSchema],
+      required: false,
+      default: [],
+    },
     comments: [
       {
         type: Types.ObjectId,

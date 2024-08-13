@@ -3,6 +3,7 @@ import User from "../models/User";
 import Comment from "../models/Comment";
 import { IPosts } from "../@types/postsType";
 import { uploadImage } from "../utils/cloudinary";
+import IPhoto from "../@types/photoType";
 
 // * Libraries
 import { Request, Response } from "express";
@@ -13,6 +14,7 @@ import asyncHandler from "express-async-handler";
 import BadRequestError from "../errors/BadRequestError";
 import DatabaseError from "../errors/DatabaseError";
 import AuthenticationError from "../errors/AuthenticationError";
+import { IUserPayload } from "../@types/userType";
 
 // @desc Get multiple posts, used for home page
 // @route GET /api/posts/
@@ -59,7 +61,7 @@ const getPost = asyncHandler(
         comments: post.comments,
         isEditted: post.isEditted,
         likeCount: post.likeCount,
-        imageUrls: post.imageUrls,
+        images: post.images,
       };
 
       res.status(200).json({
@@ -78,33 +80,34 @@ const getPost = asyncHandler(
 const createPost = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { title, description }: IPosts = req.body;
-    const rawFile: any = req.files;
+    const rawFiles: any = req.files;
 
     if (!title || !description) {
       throw new BadRequestError("Incomplete input");
     }
 
-    let imageUrls: string[] = [];
+    let images: IPhoto[] = [];
 
-    if (rawFile) {
-      // Filter req.files to get only the image paths
-      const imagePaths: string[] = rawFile.map((file: any) => file.path);
-
+    if (rawFiles) {
       // upload images to cloudinary
-      imageUrls = await Promise.all(
-        imagePaths.map(async (path: string) => uploadImage(path))
+      images = await Promise.all(
+        rawFiles.map(async (image: Express.Multer.File) =>
+          uploadImage(image.buffer)
+        )
       );
     }
 
-    const ownerId = req.user?.id;
+    const owner: IUserPayload | null = await User.findById(req.user?.id);
 
-    const owner = await User.findById(ownerId);
+    if (!owner) {
+      throw new BadRequestError("User not found");
+    }
 
     const newPost = await Posts.create({
       title: title,
       description: description,
-      ownerId: ownerId,
-      imageUrls: imageUrls,
+      ownerId: owner.id,
+      images: images,
     });
 
     if (newPost) {
@@ -114,7 +117,7 @@ const createPost = asyncHandler(
           postId: newPost._id,
           title: newPost.title,
           description: newPost.description,
-          imageUrls: imageUrls,
+          images: newPost.images,
           owner: owner?.username,
           ownerId: newPost.ownerId,
         },
@@ -165,11 +168,11 @@ const deletePost = asyncHandler(
 
     if (deletedPost) {
       // delete post's comments
-      const deletedCommendResult = await Comment.deleteMany({
+      const deletedCommentResult = await Comment.deleteMany({
         repliesTo: deletedPost._id,
       });
 
-      if (!deletedCommendResult) {
+      if (!deletedCommentResult) {
         throw new Error("Failed to delete post's comments");
       }
 

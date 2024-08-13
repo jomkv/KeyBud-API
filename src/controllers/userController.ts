@@ -1,6 +1,7 @@
 import User from "../models/User";
 import { IUser, IUserPayload } from "../@types/userType";
 import { uploadImage } from "../utils/cloudinary";
+import IPhoto from "../@types/photoType";
 
 // * Libraries
 import { Request, Response } from "express";
@@ -86,7 +87,7 @@ const loginUser = asyncHandler(
         username: user.username,
         switchType: user.switchType,
         email: user.email,
-        iconURL: user.iconURL || null,
+        icon: user.icon,
       };
 
       if (!process.env.JWT_SECRET) {
@@ -122,20 +123,20 @@ const getUserProfile = asyncHandler(
 // @access Private
 const setUserIcon = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const filePath = req.file?.path;
+    const fileBuffer: Buffer | undefined = req.file?.buffer;
     const userId = req.params.id;
 
-    if (!filePath) {
+    if (!fileBuffer) {
       throw new BadRequestError("Image could not be found");
     }
 
     // upload image to cloudinary
-    const imageUrl: String = await uploadImage(filePath);
+    const image: IPhoto = await uploadImage(fileBuffer);
 
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       {
-        iconURL: imageUrl,
+        iconURL: image,
       },
       { new: true }
     ).select("-password");

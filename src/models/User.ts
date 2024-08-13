@@ -1,5 +1,6 @@
 import { Schema, Types, model } from "mongoose";
 import { IUser } from "../@types/userType";
+import photoSchema from "./schemas/photoSchema";
 
 const userSchema: Schema = new Schema<IUser>(
   {
@@ -21,8 +22,8 @@ const userSchema: Schema = new Schema<IUser>(
       type: String,
       require: true,
     },
-    iconURL: {
-      type: String,
+    icon: {
+      type: photoSchema,
       required: false,
     },
     likedPosts: [

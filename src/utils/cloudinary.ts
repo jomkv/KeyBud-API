@@ -11,7 +11,7 @@ cloudinary.config({
   secure: true, // use https
 });
 
-export const uploadImage = async (imageBuffer: Buffer) => {
+export const uploadImage = async (imageBuffer: Buffer): Promise<IPhoto> => {
   const options = {
     use_filename: true,
     unique_filename: false,
