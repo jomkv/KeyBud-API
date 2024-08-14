@@ -2,10 +2,10 @@ import { Types } from "mongoose";
 import IPhoto from "./photoType";
 
 interface IUser {
-  username: String;
-  email: String;
+  username: string;
+  email: string;
   password: string;
-  switchType: String;
+  switchType: string;
   icon?: IPhoto;
   likedPosts: Types.ObjectId[];
   likedComments: Types.ObjectId[];

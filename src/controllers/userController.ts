@@ -8,8 +8,7 @@ import { Request, Response } from "express";
 import asyncHandler from "express-async-handler";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
-import mongoose from "mongoose";
-import { Types } from "mongoose";
+import validator from "validator";
 
 // * Custom Errors
 import BadRequestError from "../errors/BadRequestError";
@@ -21,9 +20,14 @@ import DatabaseError from "../errors/DatabaseError";
 const registerUser = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { username, password, email, switchType }: IUser = req.body;
+
     // Validate user input
     if (!username || !password || !email || !switchType) {
       throw new BadRequestError("Incomplete input");
+    }
+
+    if (!validator.isEmail(email)) {
+      throw new BadRequestError("Invalid email");
     }
 
     // Check if Username / Email is taken
@@ -66,16 +70,16 @@ const registerUser = asyncHandler(
 // @access Public
 const loginUser = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const { username, email, password }: IUser = req.body;
+    const { usernameOrEmail, password }: any = req.body;
 
     // Validate input
-    if ((!username && !email) || !password) {
+    if (!usernameOrEmail || !password) {
       throw new BadRequestError("Incomplete input");
     }
 
     // Find user
     const user = await User.findOne({
-      $or: [{ username: username }, { email: email }],
+      $or: [{ username: usernameOrEmail }, { email: usernameOrEmail }],
     });
 
     if (

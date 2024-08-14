@@ -21,6 +21,7 @@ const port: Number = Number(process.env.PORT);
 // * Middlewares
 app.use(cors());
 app.use(express.urlencoded({ extended: false })); // allow destructuring of req.body
+app.use(express.json());
 
 // * Routes
 app.use("/api/user", userRouter);
