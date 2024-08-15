@@ -22,7 +22,7 @@ const registerUser = asyncHandler(
     const { username, password, email, switchType }: IUser = req.body;
 
     // Validate user input
-    if (!username || !password || !email || !switchType) {
+    if (!username || !password || !email) {
       throw new BadRequestError("Incomplete input");
     }
 
