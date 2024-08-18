@@ -3,7 +3,6 @@ import express, { Application } from "express";
 import asyncHandler from "express-async-handler";
 import dotenv from "dotenv";
 import cors from "cors";
-// import multer from "multer";
 
 // * Local Imports
 import connectDB from "./config/db";
@@ -19,7 +18,13 @@ const app: Application = express();
 const port: Number = Number(process.env.PORT);
 
 // * Middlewares
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:3000"],
+    methods: ["POST", "GET", "PUT", "PATCH", "DELETE"],
+    credentials: true,
+  })
+);
 app.use(express.urlencoded({ extended: false })); // allow destructuring of req.body
 app.use(express.json());
 

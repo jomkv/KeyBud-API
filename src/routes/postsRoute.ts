@@ -21,7 +21,7 @@ const router: Router = Router();
 // * Posts
 router
   .route("/")
-  .post(protect, upload.array("images", 2), createPost)
+  .post(protect, upload.array("images[]", 2), createPost)
   .get(getManyPosts);
 router
   .route("/:id")
