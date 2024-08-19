@@ -47,26 +47,14 @@ const getPost = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const postId = req.params.id;
 
-    const post: IPosts | null = await Posts.findById(postId);
+    const post: IPosts | null = await Posts.findById(postId).populate(
+      "ownerId"
+    );
 
     if (post) {
-      // Find owner's username
-      const ownerName = await User.findById(post.ownerId);
-
-      const postData = {
-        title: post.title,
-        description: post.description,
-        owner: ownerName?.username || "Unknown Owner",
-        isOwner: post.ownerId == req.user?.id,
-        comments: post.comments,
-        isEditted: post.isEditted,
-        likeCount: post.likeCount,
-        images: post.images,
-      };
-
       res.status(200).json({
         message: "Post found!",
-        postData,
+        post,
       });
     } else {
       throw new BadRequestError("Post not found");
