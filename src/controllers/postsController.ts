@@ -47,9 +47,10 @@ const getPost = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const postId = req.params.id;
 
-    const post: IPosts | null = await Posts.findById(postId).populate(
-      "ownerId"
-    );
+    const post: IPosts | null = await Posts.findById(postId).populate({
+      path: "ownerId",
+      select: "-password",
+    });
 
     if (post) {
       res.status(200).json({
