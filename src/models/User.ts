@@ -1,8 +1,9 @@
 import { Schema, Types, model } from "mongoose";
-import { IUser } from "../@types/userType";
+import { IUser, UserModel, IUserMethods } from "../@types/userType";
 import photoSchema from "./schemas/photoSchema";
+import bcrypt from "bcryptjs";
 
-const userSchema: Schema = new Schema<IUser>(
+const userSchema: Schema = new Schema<IUser, UserModel, IUserMethods>(
   {
     username: {
       type: String,
@@ -26,24 +27,26 @@ const userSchema: Schema = new Schema<IUser>(
       type: photoSchema,
       required: false,
     },
-    likedPosts: [
-      {
-        type: Types.ObjectId,
-        ref: "Posts",
-        required: false,
-      },
-    ],
-    likedComments: [
-      {
-        type: Types.ObjectId,
-        ref: "Comment",
-        required: false,
-      },
-    ],
   },
   { timestamps: true }
 );
 
-const User = model<IUser>("User", userSchema);
+// Compare entered password with encrypted password
+userSchema.methods.comparePassword = async function (enteredPassword: string) {
+  return await bcrypt.compare(enteredPassword, this.password);
+};
+
+// Auto encrypt password using bcrypt
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) {
+    return next();
+  }
+
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password as string, salt);
+  next();
+});
+
+const User = model<IUser, UserModel>("User", userSchema);
 
 export default User;

@@ -1,4 +1,4 @@
-import { Types } from "mongoose";
+import { Types, Model } from "mongoose";
 import IPhoto from "./photoType";
 
 interface IUser {
@@ -7,18 +7,22 @@ interface IUser {
   password: string;
   switchType: string;
   icon?: IPhoto;
-  likedPosts: Types.ObjectId[];
-  likedComments: Types.ObjectId[];
 }
+
+interface IUserMethods {
+  comparePassword(enteredPassword: string): Promise<boolean>;
+}
+
+type UserModel = Model<IUser, {}, IUserMethods>;
 
 interface IUserPayload {
   id: Types.ObjectId;
+  _id?: Types.ObjectId;
   username: String;
   switchType: String;
+  password?: string;
   email: String;
   icon?: IPhoto;
-  likedPosts?: Types.ObjectId[];
-  likedComments?: Types.ObjectId[];
 }
 
-export { IUser, IUserPayload };
+export { IUser, IUserPayload, IUserMethods, UserModel };
