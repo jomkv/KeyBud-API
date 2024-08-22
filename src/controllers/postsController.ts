@@ -1,13 +1,14 @@
 import Posts from "../models/Posts";
 import User from "../models/User";
 import Comment from "../models/Comment";
+import PostLike from "../models/PostLike";
 import { IPosts } from "../@types/postsType";
 import { uploadImage } from "../utils/cloudinary";
 import IPhoto from "../@types/photoType";
 
 // * Libraries
 import { Request, Response } from "express";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import asyncHandler from "express-async-handler";
 
 // * Custom Errors
@@ -21,18 +22,31 @@ import { IUserPayload } from "../@types/userType";
 // @access Public
 const getManyPosts = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const posts = await Posts.find()
+    const posts: IPosts[] | null = await Posts.find()
       .sort({ createdAt: -1 }) // sort descending
-      .limit(10)
-      .populate({
-        path: "ownerId",
-        select: "username",
-      });
+      .limit(10);
 
     if (posts) {
+      const postPayload = await Promise.all(
+        posts.map(async (post) => {
+          let likes = await PostLike.find({ post: post.id });
+          let likeCount = likes ? likes.length : 0;
+
+          return {
+            postId: post._id,
+            title: post.title,
+            description: post.description,
+            images: post.images,
+            owner: post.ownerId.username,
+            ownerId: post.ownerId._id,
+            likeCount,
+          };
+        })
+      );
+
       res.status(200).json({
         message: "Successfuly fetched posts",
-        posts,
+        postPayload,
       });
     } else {
       throw new DatabaseError();
@@ -53,9 +67,19 @@ const getPost = asyncHandler(
     });
 
     if (post) {
+      const isLiked = req.user
+        ? await PostLike.findOne({ post: postId, user: req.user?.id })
+        : false;
+
+      const likes = await PostLike.find({ post: postId });
+      const likeCount = likes ? likes.length : 0;
+
       res.status(200).json({
         message: "Post found!",
         post,
+        user: req.user,
+        isLiked,
+        likeCount,
       });
     } else {
       throw new BadRequestError("Post not found");
@@ -153,31 +177,34 @@ const deletePost = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const postId = req.params.id;
 
-    const deletedPost = await Posts.findByIdAndDelete(postId);
+    const post = await Posts.findById(postId);
 
-    if (deletedPost) {
-      // delete post's comments
-      const deletedCommentResult = await Comment.deleteMany({
-        repliesTo: deletedPost._id,
-      });
+    if (!post) {
+      throw new BadRequestError("Post not found");
+    }
 
-      if (!deletedCommentResult) {
-        throw new Error("Failed to delete post's comments");
-      }
+    const session = await mongoose.startSession();
 
-      // delete post from user's likedPost
-      await User.updateMany({}, { $pull: { likedPosts: postId } });
+    try {
+      await Posts.findByIdAndDelete(postId).session(session);
+      await Comment.deleteMany({
+        repliesTo: postId,
+      }).session(session);
+      await PostLike.deleteMany({ post: postId }).session(session);
+
+      await session.commitTransaction();
 
       res.status(200).json({
         message: "Post Deletion successful",
         deletedPost: {
-          postId: deletedPost._id,
-          title: deletedPost.title,
-          description: deletedPost.description,
-          ownerId: deletedPost.ownerId,
+          postId: post.id,
+          title: post.title,
+          description: post.description,
+          owner: post.ownerId,
         },
       });
-    } else {
+    } catch (error) {
+      await session.abortTransaction();
       throw new DatabaseError();
     }
   }
@@ -191,66 +218,17 @@ const likePost = asyncHandler(
     const postId = req.params.id;
     const userId = req.user?.id;
 
-    // Determine if post is already liked by user or not
-    const isLiked = (await User.findOne({
-      $and: [{ _id: userId }, { likedPosts: { $in: [postId] } }],
-    }))
-      ? true
-      : false;
+    const isLiked = await PostLike.findOne({ user: userId, post: postId });
 
-    const updatedPost = await Posts.findByIdAndUpdate(
-      postId,
-      { $inc: { likeCount: isLiked ? -1 : 1 } },
-      { new: true }
-    );
-
-    if (updatedPost) {
-      const isSuccess: boolean = await updateUserLikedPosts(
-        userId,
-        postId,
-        !isLiked
-      );
-
-      if (!isSuccess) {
-        throw new DatabaseError();
-      }
-
-      res.status(200).json({
-        message: `Post successfully ${isLiked ? "Unliked" : "Liked"}`,
-        updatedPost,
-      });
+    if (isLiked) {
+      await PostLike.findByIdAndDelete(isLiked.id);
     } else {
-      throw new DatabaseError();
+      await PostLike.create({ user: userId, post: postId });
     }
+    res.status(200).json({
+      message: `Post successfully ${isLiked ? "Unliked" : "Liked"}`,
+    });
   }
 );
-
-const updateUserLikedPosts = async (
-  userId: Types.ObjectId | undefined,
-  postId: string,
-  like: boolean // true for like, false for unlike
-): Promise<boolean> => {
-  let isSuccess: boolean;
-
-  // Remove from user's likedPosts
-  if (!like) {
-    await User.updateMany({ _id: userId }, { $pull: { likedPosts: postId } });
-    isSuccess = true;
-  } else {
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      {
-        $push: { likedPosts: postId },
-      },
-      {
-        new: true,
-      }
-    );
-
-    isSuccess = updatedUser ? true : false;
-  }
-
-  return isSuccess;
-};
 
 export { createPost, getPost, deletePost, editPost, likePost, getManyPosts };

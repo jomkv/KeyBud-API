@@ -1,14 +1,20 @@
 import { Types } from "mongoose";
 import IPhoto from "./photoType";
+import { IUserPayload } from "./userType";
 
 interface IPosts {
+  _id?: Types.ObjectId;
+  id?: Types.ObjectId;
   title: String;
   description: String;
-  ownerId: Types.ObjectId;
+  ownerId: IUserPayload;
   images?: IPhoto[];
-  comments: Types.ObjectId[];
   isEditted: Boolean;
-  likeCount: Number;
 }
 
-export { IPosts };
+interface IPostLike {
+  user: Types.ObjectId;
+  post: Types.ObjectId;
+}
+
+export { IPosts, IPostLike };

@@ -1,7 +1,9 @@
 import Posts from "../models/Posts";
 import Comment from "../models/Comment";
 import User from "../models/User";
-import { IComment } from "../@types/commentType";
+import CommentLike from "../models/CommentLike";
+import { IComment, ICommentLike } from "../@types/commentType";
+import { IPosts } from "../@types/postsType";
 
 // * Libraries
 import asyncHandler from "express-async-handler";
@@ -59,10 +61,13 @@ const getComment = asyncHandler(
     const comment: IComment | null = await Comment.findById(commentId);
 
     if (comment) {
+      const likes = await CommentLike.find({ comment: commentId });
+      const likeCount = likes ? likes.length : 0;
+
       const commentPayload = {
         commentId: commentId,
         comment: comment.comment,
-        commentLikes: comment.likeCount,
+        commentLikes: likeCount,
         isCommentOwner: comment.ownerId == req.user?.id,
       };
 
@@ -83,6 +88,12 @@ const createComment = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const postId = req.params.id;
 
+    const post: IPosts | null = await Posts.findById(postId);
+
+    if (!post) {
+      throw new BadRequestError("Post not found");
+    }
+
     const { comment } = req.body;
 
     if (!comment) {
@@ -97,16 +108,6 @@ const createComment = asyncHandler(
     });
 
     if (newComment) {
-      const updatedPost = await Posts.findByIdAndUpdate(
-        postId,
-        { $push: { comments: newComment._id } },
-        { new: true } // returns the updated object
-      );
-
-      if (!updatedPost) {
-        throw new DatabaseError();
-      }
-
       res.status(201).json({
         message: "Comment successfully created",
         comment: {
@@ -131,8 +132,7 @@ const deleteComment = asyncHandler(
 
     const deletedComment = await Comment.findByIdAndDelete(commentId);
     if (deletedComment) {
-      // delete comment from user's likedComments
-      await User.updateMany({}, { $pull: { likedComments: commentId } });
+      await CommentLike.deleteMany({ comment: commentId });
 
       res.status(200).json({
         message: "Comment successfully deleted",
@@ -186,69 +186,24 @@ const likeComment = asyncHandler(
     const commentId = req.params.id;
     const userId = req.user?.id;
 
-    // Determine if comment is already liked by user or not
-    const isLiked = (await User.findOne({
-      $and: [{ _id: userId }, { likedComments: { $in: [commentId] } }],
-    }))
-      ? true
-      : false;
+    const isLiked: ICommentLike | null = await CommentLike.findOne({
+      user: userId,
+      comment: commentId,
+    });
 
-    const updatedComment = await Comment.findByIdAndUpdate(
-      commentId,
-      { $inc: { likeCount: isLiked ? -1 : 1 } },
-      { new: true }
-    );
-
-    if (updatedComment) {
-      const isSuccess: boolean = await updateUserLikedComments(
-        userId,
-        commentId,
-        !isLiked
-      );
-
-      if (!isSuccess) {
-        throw new DatabaseError();
-      }
-
-      res.status(200).json({
-        message: `Comment successfully ${isLiked ? "Unliked" : "Liked"}`,
-        updatedComment,
-      });
+    if (isLiked) {
+      await CommentLike.findByIdAndDelete(commentId);
     } else {
-      throw new DatabaseError();
+      await CommentLike.create({
+        user: userId,
+        comment: commentId,
+      });
     }
+
+    res.status(200).json({
+      message: `Comment successfully ${isLiked ? "Unliked" : "Liked"}`,
+    });
   }
 );
-
-const updateUserLikedComments = async (
-  userId: Types.ObjectId | undefined,
-  commentId: string,
-  like: boolean // true for like, false for unlike
-): Promise<boolean> => {
-  let isSuccess: boolean;
-
-  // Remove from user's likedComments
-  if (!like) {
-    await User.updateMany(
-      { _id: userId },
-      { $pull: { likedComments: commentId } }
-    );
-    isSuccess = true;
-  } else {
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      {
-        $push: { likedComments: commentId },
-      },
-      {
-        new: true,
-      }
-    );
-
-    isSuccess = updatedUser ? true : false;
-  }
-
-  return isSuccess;
-};
 
 export { createComment, deleteComment, editComment, getComment, likeComment };

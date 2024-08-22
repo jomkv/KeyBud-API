@@ -2,13 +2,14 @@ import User from "../models/User";
 import { IUser, IUserPayload } from "../@types/userType";
 import { uploadImage } from "../utils/cloudinary";
 import IPhoto from "../@types/photoType";
+import PostLike from "../models/PostLike";
 
 // * Libraries
 import { Request, Response } from "express";
 import asyncHandler from "express-async-handler";
 import jwt from "jsonwebtoken";
-import bcrypt from "bcryptjs";
 import validator from "validator";
+import { Types } from "mongoose";
 
 // * Custom Errors
 import BadRequestError from "../errors/BadRequestError";
@@ -39,15 +40,12 @@ const registerUser = asyncHandler(
       throw new BadRequestError("Username / Email already exists");
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const encryptedPass = await bcrypt.hash(password, salt);
-
     // Create user
     const newUser = await User.create({
       username,
       email,
       switchType,
-      password: encryptedPass,
+      password,
     });
 
     if (newUser) {
@@ -82,10 +80,7 @@ const loginUser = asyncHandler(
       $or: [{ username: usernameOrEmail }, { email: usernameOrEmail }],
     });
 
-    if (
-      user &&
-      (await bcrypt.compare(password, user.password)) // if password correct
-    ) {
+    if (user && (await user.comparePassword(password))) {
       const userPayload: IUserPayload = {
         id: user._id,
         username: user.username,
@@ -155,4 +150,19 @@ const setUserIcon = asyncHandler(
   }
 );
 
-export { registerUser, loginUser, setUserIcon };
+// @desc Get user's liked posts
+// @route GET /api/user/likes
+// @access Private
+const getUserLikes = asyncHandler(async (req: Request, res: Response) => {
+  const likedPosts: Types.ObjectId[] | null = await PostLike.find(
+    { user: req.user?.id },
+    { lean: true }
+  );
+
+  res.status(200).json({
+    message: "Getting liked posts success",
+    likedPosts: likedPosts || [],
+  });
+});
+
+export { registerUser, loginUser, setUserIcon, getUserLikes };

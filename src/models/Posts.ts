@@ -22,26 +22,24 @@ const postsSchema: Schema = new Schema<IPosts>(
       required: false,
       default: [],
     },
-    comments: [
-      {
-        type: Types.ObjectId,
-        ref: "Comment",
-        required: false,
-      },
-    ],
     isEditted: {
       type: Boolean,
       required: false,
       default: false,
     },
-    likeCount: {
-      type: Number,
-      required: false,
-      default: 0,
-    },
   },
   { timestamps: true }
 );
+
+// auto populate
+postsSchema.pre(["find", "findOne"], function (next) {
+  this.populate({
+    path: "ownerId",
+    select: "-password",
+  });
+
+  next();
+});
 
 const Posts = model<IPosts>("Posts", postsSchema);
 

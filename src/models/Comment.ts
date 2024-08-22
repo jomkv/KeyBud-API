@@ -16,11 +16,6 @@ const commentSchema: Schema = new Schema<IComment>(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Posts",
     },
-    likeCount: {
-      type: Number,
-      required: false,
-      default: 0,
-    },
   },
   { timestamps: true }
 );

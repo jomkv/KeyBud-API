@@ -4,7 +4,11 @@ interface IComment {
   comment: String;
   ownerId: Types.ObjectId;
   repliesTo: Types.ObjectId;
-  likeCount: Number;
 }
 
-export { IComment };
+interface ICommentLike {
+  user: Types.ObjectId;
+  comment: Types.ObjectId;
+}
+
+export { IComment, ICommentLike };
