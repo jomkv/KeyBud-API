@@ -3,11 +3,11 @@ import { IUser, IUserPayload } from "../@types/userType";
 import { uploadImage } from "../utils/cloudinary";
 import IPhoto from "../@types/photoType";
 import PostLike from "../models/PostLike";
+import generateToken from "../utils/generateToken";
 
 // * Libraries
 import { Request, Response } from "express";
 import asyncHandler from "express-async-handler";
-import jwt from "jsonwebtoken";
 import validator from "validator";
 import { Types } from "mongoose";
 
@@ -89,24 +89,28 @@ const loginUser = asyncHandler(
         icon: user.icon,
       };
 
-      if (!process.env.JWT_SECRET) {
-        throw new Error("JWT_SECRET not defined in the environment");
-      }
-
-      const token = jwt.sign(userPayload, process.env.JWT_SECRET, {
-        expiresIn: "7d",
-      });
+      generateToken(res, userPayload);
 
       res.status(200).json({
         message: "Successful login",
         userPayload,
-        token: token,
       });
     } else {
       throw new BadRequestError("Username/Email and Password does not match");
     }
   }
 );
+
+// @desc User logout & clear cookie
+// @route POST /api/user/logout
+// @access Public
+const logoutUser = (req: Request, res: Response): void => {
+  res.cookie("jwt", "", {
+    httpOnly: true,
+    expires: new Date(0),
+  });
+  res.status(200).json({ message: "Logged out successfully" });
+};
 
 // @desc Get user's profile (posts, username)
 // @route GET /api/user/:userId
@@ -165,4 +169,4 @@ const getUserLikes = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-export { registerUser, loginUser, setUserIcon, getUserLikes };
+export { registerUser, loginUser, logoutUser, setUserIcon, getUserLikes };

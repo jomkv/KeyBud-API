@@ -3,6 +3,7 @@ import express, { Application } from "express";
 import asyncHandler from "express-async-handler";
 import dotenv from "dotenv";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 
 // * Local Imports
 import connectDB from "./config/db";
@@ -27,6 +28,8 @@ app.use(
 );
 app.use(express.urlencoded({ extended: false })); // allow destructuring of req.body
 app.use(express.json());
+
+app.use(cookieParser());
 
 // * Routes
 app.use("/api/user", userRouter);

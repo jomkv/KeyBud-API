@@ -16,7 +16,7 @@ declare global {
 }
 
 /**
- * Checks req headers if JWT is provided
+ * Checks req cookies if JWT is provided
  *
  * @param {import('express').Request} req - The Express request object.
  * @param {import('express').Response} res - The Express response object.
@@ -25,39 +25,31 @@ declare global {
  */
 const protect = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
-    // Check if header or jwt exists
-    const auth = req.header("Authorization");
-    if (!auth || !auth.startsWith("Bearer ")) {
-      res.status(400);
-      throw new Error("Auth Header not found or not in proper format");
-    }
-
-    const encodedJWT = auth.substring("Bearer ".length);
-    if (encodedJWT === null || typeof encodedJWT === "undefined") {
-      res.status(400);
-      throw new Error("Token not found");
-    }
-
     // Check if JWT_SECRET exists at .env
     if (!process.env.JWT_SECRET) {
       throw new Error("JWT_SECRET not defined in the environment");
     }
 
+    let token;
+
+    token = req.cookies.jwt;
+
+    if (!token) {
+      res.status(401);
+      throw new Error("Not authorized, no token provided");
+    }
+
     try {
-      const decoded = jwt.verify(
-        encodedJWT,
-        process.env.JWT_SECRET
-      ) as IUserPayload;
+      const decoded = jwt.verify(token, process.env.JWT_SECRET) as IUserPayload;
 
       req.user = decoded;
 
       next();
     } catch (err) {
+      res.status(401);
       if (err instanceof jwt.JsonWebTokenError) {
-        res.status(401); // Not authorized
         throw new Error("Invalid Token");
       } else if (err instanceof jwt.TokenExpiredError) {
-        res.status(401); // Not authorized
         throw new Error("Token expired");
       } else {
         throw new Error("Unable to decode JWT Token");
@@ -67,7 +59,7 @@ const protect = asyncHandler(
 );
 
 /**
- * Processes JWT from headers if possible,
+ * Processes JWT from cookies if possible,
  * but will not throw an error if JWT not provided
  *
  * @param {import('express').Request} req - The Express request object.
@@ -77,23 +69,22 @@ const protect = asyncHandler(
  */
 const optionalJwt = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
-    const auth = req.header("Authorization");
-    if (auth && auth.startsWith("Bearer ")) {
-      const encodedJWT = auth.substring("Bearer ".length);
+    // Check if JWT_SECRET exists at .env
+    if (!process.env.JWT_SECRET) {
+      throw new Error("JWT_SECRET not defined in the environment");
+    }
 
-      if (
-        encodedJWT !== null &&
-        typeof encodedJWT !== `undefined` &&
-        process.env.JWT_SECRET
-      ) {
-        try {
-          const decoded = jwt.verify(
-            encodedJWT,
-            process.env.JWT_SECRET
-          ) as IUserPayload;
+    const token = req.cookies.jwt;
+    if (token) {
+      try {
+        const decoded = jwt.verify(
+          token,
+          process.env.JWT_SECRET
+        ) as IUserPayload;
 
-          req.user = decoded;
-        } catch (err) {}
+        req.user = decoded;
+      } catch (err) {
+        // Do nothing
       }
     }
 
