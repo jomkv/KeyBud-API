@@ -1,6 +1,7 @@
 import mongoose, { Schema, model } from "mongoose";
+import { IPostLike } from "../@types/postsType";
 
-const postLikeSchema: Schema = new Schema(
+const postLikeSchema: Schema = new Schema<IPostLike>(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
@@ -16,6 +17,6 @@ const postLikeSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-const PostLike = model("PostLike", postLikeSchema);
+const PostLike = model<IPostLike>("PostLike", postLikeSchema);
 
 export default PostLike;

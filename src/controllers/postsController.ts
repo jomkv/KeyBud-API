@@ -22,31 +22,33 @@ import { IUserPayload } from "../@types/userType";
 // @access Public
 const getManyPosts = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const posts: IPosts[] | null = await Posts.find()
+    const posts: any[] = await Posts.find()
       .sort({ createdAt: -1 }) // sort descending
       .limit(10);
 
     if (posts) {
       const postPayload = await Promise.all(
         posts.map(async (post) => {
+          post = post.toObject();
+
+          const isLiked = req.user
+            ? (await PostLike.findOne({ post: post.id, user: req.user?.id }))
+              ? true
+              : false
+            : false;
+
           let likes = await PostLike.find({ post: post.id });
           let likeCount = likes ? likes.length : 0;
 
-          return {
-            postId: post._id,
-            title: post.title,
-            description: post.description,
-            images: post.images,
-            owner: post.ownerId.username,
-            ownerId: post.ownerId._id,
-            likeCount,
-          };
+          post.isLiked = isLiked;
+          post.likeCount = likeCount;
+          return post;
         })
       );
 
       res.status(200).json({
         message: "Successfuly fetched posts",
-        postPayload,
+        posts: postPayload,
       });
     } else {
       throw new DatabaseError();
@@ -61,25 +63,25 @@ const getPost = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const postId = req.params.id;
 
-    const post: IPosts | null = await Posts.findById(postId).populate({
-      path: "ownerId",
-      select: "-password",
-    });
+    let post: any = (
+      await Posts.findById(postId).populate({
+        path: "ownerId",
+        select: "-password",
+      })
+    )?.toObject();
 
     if (post) {
-      const isLiked = req.user
-        ? await PostLike.findOne({ post: postId, user: req.user?.id })
-        : false;
+      const isLiked = await isPostLiked(postId, req.user);
 
-      const likes = await PostLike.find({ post: postId });
-      const likeCount = likes ? likes.length : 0;
+      const likeCount = await PostLike.find({ post: postId }).countDocuments();
+
+      post.isLiked = isLiked;
+      post.likeCount = likeCount;
 
       res.status(200).json({
         message: "Post found!",
         post,
         user: req.user,
-        isLiked,
-        likeCount,
       });
     } else {
       throw new BadRequestError("Post not found");
@@ -230,5 +232,23 @@ const likePost = asyncHandler(
     });
   }
 );
+
+// * Helper function to check if a post is liked by user from req.user
+const isPostLiked = async (
+  postId: string,
+  user: IUserPayload | undefined
+): Promise<boolean> => {
+  if (user) {
+    const like = await PostLike.findOne({ user: user.id, post: postId });
+
+    if (like) {
+      return true;
+    } else {
+      return false;
+    }
+  } else {
+    return false;
+  }
+};
 
 export { createPost, getPost, deletePost, editPost, likePost, getManyPosts };

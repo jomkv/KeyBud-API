@@ -22,7 +22,7 @@ const router: Router = Router();
 router
   .route("/")
   .post(protect, upload.array("images[]", 2), createPost)
-  .get(getManyPosts);
+  .get(optionalJwt, getManyPosts);
 router
   .route("/:id")
   .get(checkObjectId, optionalJwt, getPost)

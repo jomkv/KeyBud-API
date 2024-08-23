@@ -10,6 +10,8 @@ interface IPosts {
   ownerId: IUserPayload;
   images?: IPhoto[];
   isEditted: Boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface IPostLike {
