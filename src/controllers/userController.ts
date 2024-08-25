@@ -93,7 +93,7 @@ const loginUser = asyncHandler(
 
       res.status(200).json({
         message: "Successful login",
-        userPayload,
+        user: userPayload,
       });
     } else {
       throw new BadRequestError("Username/Email and Password does not match");
