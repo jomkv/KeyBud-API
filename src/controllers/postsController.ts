@@ -31,14 +31,8 @@ const getManyPosts = asyncHandler(
         posts.map(async (post) => {
           post = post.toObject();
 
-          const isLiked = req.user
-            ? (await PostLike.findOne({ post: post.id, user: req.user?.id }))
-              ? true
-              : false
-            : false;
-
-          let likes = await PostLike.find({ post: post.id });
-          let likeCount = likes ? likes.length : 0;
+          const isLiked = await isPostLiked(post._id, req.user);
+          const likeCount = await PostLike.find({ post }).countDocuments();
 
           post.isLiked = isLiked;
           post.likeCount = likeCount;
