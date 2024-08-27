@@ -1,6 +1,8 @@
 import { Router } from "express";
 
 import {
+  getAllComments,
+  createComment,
   deleteComment,
   editComment,
   getComment,
@@ -17,9 +19,12 @@ const router: Router = Router();
 router
   .route("/:id")
   .get(checkObjectId, optionalJwt, getComment)
+  .post(checkObjectId, protect, createComment)
   .put(checkObjectId, protect, commentOwnerValidate, editComment)
   .delete(checkObjectId, protect, commentOwnerValidate, deleteComment);
 router.route("/:id/like").post(checkObjectId, protect, likeComment);
+
+router.route("/all/:id").get(checkObjectId, optionalJwt, getAllComments);
 
 // router.route("/:postId/comment/:id").get(optionalJwt, getCommentWithPost);
 

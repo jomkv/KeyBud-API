@@ -13,43 +13,26 @@ import { Request, Response } from "express";
 // * Custom Errors
 import BadRequestError from "../errors/BadRequestError";
 import DatabaseError from "../errors/DatabaseError";
-import AuthenticationError from "../errors/AuthenticationError";
 
-// @desc Get a comment from a specific post
-// @route GET /api/posts/:postId/comment/:commentId
+// @desc Get all comments from a post
+// @route GET /api/comment/all/:postId
 // @access Public
+const getAllComments = asyncHandler(async (req: Request, res: Response) => {
+  const postId = req.params.id;
 
-// const getCommentWithPost = asyncHandler(
-//   async (req: Request, res: Response): Promise<void> => {
-//     const { postId, commentId } = req.params;
+  const post: IPosts | null = await Posts.findById(postId);
 
-//     const parentPost = await Posts.findById(postId);
-//     const comment = await Comment.findById(commentId);
+  if (!post) {
+    throw new BadRequestError("Post not found");
+  }
 
-//     if (!parentPost && !comment) {
-//       throw new BadRequestError("Both Post and Comment not found");
-//     } else if (!parentPost) {
-//       throw new BadRequestError("Post not found");
-//     } else if (!comment) {
-//       throw new BadRequestError("Comment not found");
-//     }
+  const comments: IComment[] = await Comment.find({ repliesTo: postId });
 
-//     const commentPayload = {
-//       postTitle: parentPost.title,
-//       postDescription: parentPost.description,
-//       postLikes: parentPost.likeCount,
-//       isPostOwner: parentPost.postedBy == req.user?.id,
-//       comment: comment.comment,
-//       commentLikes: comment.likeCount,
-//       isCommentOwner: comment.ownerId == req.user?.id,
-//     };
-
-//     res.status(200).json({
-//       message: "Comment found",
-//       comment: commentPayload,
-//     });
-//   }
-// );
+  res.status(200).json({
+    message: "Comments found!",
+    comments,
+  });
+});
 
 // @desc Get a comment
 // @route GET /api/comment/:id
@@ -82,7 +65,7 @@ const getComment = asyncHandler(
 );
 
 // @desc create a comment
-// @route POST /api/posts/:id/comment
+// @route POST /api/comment/:postId
 // @access Private
 const createComment = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
@@ -206,4 +189,11 @@ const likeComment = asyncHandler(
   }
 );
 
-export { createComment, deleteComment, editComment, getComment, likeComment };
+export {
+  createComment,
+  deleteComment,
+  editComment,
+  getComment,
+  likeComment,
+  getAllComments,
+};

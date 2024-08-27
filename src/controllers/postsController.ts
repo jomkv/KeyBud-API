@@ -5,6 +5,7 @@ import PostLike from "../models/PostLike";
 import { IPosts } from "../@types/postsType";
 import { uploadImage } from "../utils/cloudinary";
 import IPhoto from "../@types/photoType";
+import { IUserPayload } from "../@types/userType";
 
 // * Libraries
 import { Request, Response } from "express";
@@ -15,7 +16,6 @@ import asyncHandler from "express-async-handler";
 import BadRequestError from "../errors/BadRequestError";
 import DatabaseError from "../errors/DatabaseError";
 import AuthenticationError from "../errors/AuthenticationError";
-import { IUserPayload } from "../@types/userType";
 
 // @desc Get multiple posts, used for home page
 // @route GET /api/posts/
@@ -33,9 +33,13 @@ const getManyPosts = asyncHandler(
 
           const isLiked = await isPostLiked(post._id, req.user);
           const likeCount = await PostLike.find({ post }).countDocuments();
+          const commentCount = await Comment.find({
+            repliesTo: post._id,
+          }).countDocuments();
 
           post.isLiked = isLiked;
           post.likeCount = likeCount;
+          post.commentCount = commentCount;
           return post;
         })
       );
@@ -66,7 +70,6 @@ const getPost = asyncHandler(
 
     if (post) {
       const isLiked = await isPostLiked(postId, req.user);
-
       const likeCount = await PostLike.find({ post: postId }).countDocuments();
 
       post.isLiked = isLiked;

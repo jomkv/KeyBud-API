@@ -20,6 +20,13 @@ const commentSchema: Schema = new Schema<IComment>(
   { timestamps: true }
 );
 
+// auto populate owner
+commentSchema.pre(["find", "findOne"], function (next) {
+  this.populate({ path: "ownerId", select: "-password" });
+
+  next();
+});
+
 const Comment = model<IComment>("Comment", commentSchema);
 
 export default Comment;
