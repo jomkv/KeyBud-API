@@ -3,7 +3,7 @@ import IPhoto from "./photoType";
 import { IUserPayload } from "./userType";
 
 interface IPosts {
-  _id?: Types.ObjectId;
+  _id: string;
   id?: Types.ObjectId;
   title: String;
   description: String;
@@ -14,9 +14,15 @@ interface IPosts {
   updatedAt: string;
 }
 
+interface IPostWithProps extends IPosts {
+  likeCount: number;
+  commentCount: number;
+  isLiked: boolean;
+}
+
 interface IPostLike {
   user: Types.ObjectId;
   post: Types.ObjectId;
 }
 
-export { IPosts, IPostLike };
+export { IPosts, IPostLike, IPostWithProps };

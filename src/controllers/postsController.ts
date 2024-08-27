@@ -6,16 +6,19 @@ import { IPosts } from "../@types/postsType";
 import { uploadImage } from "../utils/cloudinary";
 import IPhoto from "../@types/photoType";
 import { IUserPayload } from "../@types/userType";
+import {
+  getPostProperties,
+  getMultiplePostProperties,
+} from "../utils/postHelper";
 
 // * Libraries
 import { Request, Response } from "express";
-import mongoose, { Types } from "mongoose";
+import mongoose from "mongoose";
 import asyncHandler from "express-async-handler";
 
 // * Custom Errors
 import BadRequestError from "../errors/BadRequestError";
 import DatabaseError from "../errors/DatabaseError";
-import AuthenticationError from "../errors/AuthenticationError";
 
 // @desc Get multiple posts, used for home page
 // @route GET /api/posts/
@@ -27,22 +30,7 @@ const getManyPosts = asyncHandler(
       .limit(10);
 
     if (posts) {
-      const postPayload = await Promise.all(
-        posts.map(async (post) => {
-          post = post.toObject();
-
-          const isLiked = await isPostLiked(post._id, req.user);
-          const likeCount = await PostLike.find({ post }).countDocuments();
-          const commentCount = await Comment.find({
-            repliesTo: post._id,
-          }).countDocuments();
-
-          post.isLiked = isLiked;
-          post.likeCount = likeCount;
-          post.commentCount = commentCount;
-          return post;
-        })
-      );
+      const postPayload = await getMultiplePostProperties(posts, req.user);
 
       res.status(200).json({
         message: "Successfuly fetched posts",
@@ -61,19 +49,10 @@ const getPost = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const postId = req.params.id;
 
-    let post: any = (
-      await Posts.findById(postId).populate({
-        path: "ownerId",
-        select: "-password",
-      })
-    )?.toObject();
+    let post: any = await Posts.findById(postId);
 
     if (post) {
-      const isLiked = await isPostLiked(postId, req.user);
-      const likeCount = await PostLike.find({ post: postId }).countDocuments();
-
-      post.isLiked = isLiked;
-      post.likeCount = likeCount;
+      post = await getPostProperties(post, req.user);
 
       res.status(200).json({
         message: "Post found!",
@@ -229,23 +208,5 @@ const likePost = asyncHandler(
     });
   }
 );
-
-// * Helper function to check if a post is liked by user from req.user
-const isPostLiked = async (
-  postId: string,
-  user: IUserPayload | undefined
-): Promise<boolean> => {
-  if (user) {
-    const like = await PostLike.findOne({ user: user.id, post: postId });
-
-    if (like) {
-      return true;
-    } else {
-      return false;
-    }
-  } else {
-    return false;
-  }
-};
 
 export { createPost, getPost, deletePost, editPost, likePost, getManyPosts };

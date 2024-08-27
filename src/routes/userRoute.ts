@@ -6,9 +6,10 @@ import {
   logoutUser,
   setUserIcon,
   getUserLikes,
+  getUserProfile,
 } from "../controllers/userController";
 
-import { protect } from "../middlewares/auth";
+import { optionalJwt, protect } from "../middlewares/auth";
 import checkObjectId from "../middlewares/checkObjectId";
 import upload from "../utils/upload";
 
@@ -19,6 +20,7 @@ router.route("/login").post(loginUser);
 router.route("/logout").post(logoutUser);
 router
   .route("/:id")
+  .get(checkObjectId, optionalJwt, getUserProfile)
   .post(checkObjectId, protect, upload.single("userIcon"), setUserIcon);
 router.route("/likes").get(protect, getUserLikes);
 

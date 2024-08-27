@@ -1,9 +1,11 @@
 import User from "../models/User";
+import Posts from "../models/Posts";
 import { IUser, IUserPayload } from "../@types/userType";
 import { uploadImage } from "../utils/cloudinary";
 import IPhoto from "../@types/photoType";
 import PostLike from "../models/PostLike";
 import generateToken from "../utils/generateToken";
+import { getMultiplePostProperties } from "../utils/postHelper";
 
 // * Libraries
 import { Request, Response } from "express";
@@ -117,7 +119,30 @@ const logoutUser = (req: Request, res: Response): void => {
 // @access Public
 const getUserProfile = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    // TODO
+    const user: IUser | unknown = await User.findById(req.params.id).select(
+      "-password"
+    );
+
+    if (!user) {
+      throw new BadRequestError("User not found");
+    }
+
+    const posts = await Posts.find({ ownerId: req.params.id });
+    const postsPayload = await getMultiplePostProperties(posts, req.user);
+
+    let likes = await PostLike.find({ user: req.params.id })
+      .populate("post")
+      .select({ post: 1, _id: 0 });
+
+    likes = likes.map((like: any) => like.post);
+
+    const likesPayload = await getMultiplePostProperties(likes, req.user);
+
+    res.status(200).json({
+      user,
+      posts: postsPayload,
+      likes: likesPayload,
+    });
   }
 );
 
@@ -169,4 +194,11 @@ const getUserLikes = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-export { registerUser, loginUser, logoutUser, setUserIcon, getUserLikes };
+export {
+  registerUser,
+  loginUser,
+  logoutUser,
+  setUserIcon,
+  getUserLikes,
+  getUserProfile,
+};
