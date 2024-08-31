@@ -1,6 +1,5 @@
 import multer from "multer";
 import BadRequestError from "../errors/BadRequestError";
-import path from "path";
 import { Request } from "express";
 
 const storage = multer.memoryStorage();
