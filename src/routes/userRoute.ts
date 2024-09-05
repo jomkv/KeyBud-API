@@ -16,8 +16,8 @@ import upload from "../utils/upload";
 
 const router: Router = Router();
 
-router.route("/likes").get(protect, getUserLikes);
-router.route("/posts").get(protect, getUserPosts);
+router.route("/:id/likes").get(optionalJwt, getUserLikes);
+router.route("/:id/posts").get(optionalJwt, getUserPosts);
 
 router.route("/register").post(registerUser);
 router.route("/login").post(loginUser);

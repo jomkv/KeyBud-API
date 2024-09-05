@@ -117,7 +117,7 @@ const logoutUser = (req: Request, res: Response): void => {
   res.status(200).json({ message: "Logged out successfully" });
 };
 
-// @desc Get user's profile (posts, username)
+// @desc Get user's profile (username, switchtype)
 // @route GET /api/user/:userId
 // @access Public
 const getUserProfile = asyncHandler(
@@ -130,21 +130,8 @@ const getUserProfile = asyncHandler(
       throw new BadRequestError("User not found");
     }
 
-    const posts = await Posts.find({ ownerId: req.params.id });
-    const postsPayload = await getMultiplePostProperties(posts, req.user);
-
-    let likes = await PostLike.find({ user: req.params.id })
-      .populate("post")
-      .select({ post: 1, _id: 0 });
-
-    likes = likes.map((like: any) => like.post);
-
-    const likesPayload = await getMultiplePostProperties(likes, req.user);
-
     res.status(200).json({
       user,
-      posts: postsPayload,
-      likes: likesPayload,
     });
   }
 );
@@ -183,11 +170,11 @@ const setUserIcon = asyncHandler(
 );
 
 // @desc Get user's liked posts
-// @route GET /api/user/likes
+// @route GET /api/user/:userId/likes
 // @access Private
 const getUserLikes = asyncHandler(async (req: Request, res: Response) => {
   const likes: IPopulatedPostLike[] | null = await PostLike.find({
-    user: req.user?.id,
+    user: req.params.id,
   }).populate("post");
 
   let likedPosts: IPostWithProps[] = [];
@@ -208,10 +195,10 @@ const getUserLikes = asyncHandler(async (req: Request, res: Response) => {
 });
 
 // @desc Get user's posts
-// @route GET /api/user/posts
-// @access Private
+// @route GET /api/user/:userId/posts
+// @access Public
 const getUserPosts = asyncHandler(async (req: Request, res: Response) => {
-  const userPosts = await Posts.find({ ownerId: req.user?.id });
+  const userPosts = await Posts.find({ ownerId: req.params.id });
 
   let userPostsPayload: IPostWithProps[] = [];
 
@@ -221,7 +208,7 @@ const getUserPosts = asyncHandler(async (req: Request, res: Response) => {
 
   res.status(200).json({
     message: "Getting user posts success",
-    likedPosts: userPostsPayload,
+    userPosts: userPostsPayload,
   });
 });
 
