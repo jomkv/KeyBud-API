@@ -5,17 +5,20 @@ import { uploadImage } from "../utils/cloudinary";
 import IPhoto from "../@types/photoType";
 import PostLike from "../models/PostLike";
 import generateToken from "../utils/generateToken";
-import { getMultiplePostProperties } from "../utils/postHelper";
+import {
+  getMultiplePostProperties,
+  getPostProperties,
+} from "../utils/postHelper";
 
 // * Libraries
 import { Request, Response } from "express";
 import asyncHandler from "express-async-handler";
 import validator from "validator";
-import { Types } from "mongoose";
 
 // * Custom Errors
 import BadRequestError from "../errors/BadRequestError";
 import DatabaseError from "../errors/DatabaseError";
+import { IPopulatedPostLike, IPostWithProps } from "../@types/postsType";
 
 // @desc Create new user
 // @route POST /api/user/register
@@ -183,14 +186,42 @@ const setUserIcon = asyncHandler(
 // @route GET /api/user/likes
 // @access Private
 const getUserLikes = asyncHandler(async (req: Request, res: Response) => {
-  const likedPosts: Types.ObjectId[] | null = await PostLike.find(
-    { user: req.user?.id },
-    { lean: true }
-  );
+  const likes: IPopulatedPostLike[] | null = await PostLike.find({
+    user: req.user?.id,
+  }).populate("post");
+
+  let likedPosts: IPostWithProps[] = [];
+
+  if (likes) {
+    likedPosts = await Promise.all(
+      likes.map(
+        async (like: IPopulatedPostLike) =>
+          await getPostProperties(like.post, req.user)
+      )
+    );
+  }
 
   res.status(200).json({
-    message: "Getting liked posts success",
-    likedPosts: likedPosts || [],
+    message: "Getting user liked posts success",
+    likedPosts: likedPosts,
+  });
+});
+
+// @desc Get user's posts
+// @route GET /api/user/posts
+// @access Private
+const getUserPosts = asyncHandler(async (req: Request, res: Response) => {
+  const userPosts = await Posts.find({ ownerId: req.user?.id });
+
+  let userPostsPayload: IPostWithProps[] = [];
+
+  if (userPosts) {
+    userPostsPayload = await getMultiplePostProperties(userPosts, req.user);
+  }
+
+  res.status(200).json({
+    message: "Getting user posts success",
+    likedPosts: userPostsPayload,
   });
 });
 
@@ -201,4 +232,5 @@ export {
   setUserIcon,
   getUserLikes,
   getUserProfile,
+  getUserPosts,
 };

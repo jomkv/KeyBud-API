@@ -7,7 +7,7 @@ import {
 } from "../controllers/messageController";
 
 // * Middlewares
-import { protect, optionalJwt } from "../middlewares/auth";
+import { protect } from "../middlewares/auth";
 import checkObjectId from "../middlewares/checkObjectId";
 
 const router: Router = Router();

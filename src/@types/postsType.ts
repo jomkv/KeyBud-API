@@ -25,4 +25,9 @@ interface IPostLike {
   post: Types.ObjectId;
 }
 
-export { IPosts, IPostLike, IPostWithProps };
+interface IPopulatedPostLike {
+  user: Types.ObjectId;
+  post: IPosts;
+}
+
+export { IPosts, IPostLike, IPostWithProps, IPopulatedPostLike };
