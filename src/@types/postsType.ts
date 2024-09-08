@@ -1,8 +1,8 @@
-import { Types } from "mongoose";
+import { Types, Document } from "mongoose";
 import IPhoto from "./photoType";
 import { IUserPayload } from "./userType";
 
-interface IPosts {
+interface IPosts extends Document {
   _id: string;
   id?: Types.ObjectId;
   title: String;
@@ -10,6 +10,7 @@ interface IPosts {
   ownerId: IUserPayload;
   images?: IPhoto[];
   isEditted: Boolean;
+  isPinned?: Boolean;
   createdAt: string;
   updatedAt: string;
 }

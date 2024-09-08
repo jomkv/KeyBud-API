@@ -7,6 +7,7 @@ import {
   editPost,
   likePost,
   getManyPosts,
+  pinPost,
 } from "../controllers/postsController";
 
 // * Middlewares
@@ -27,5 +28,8 @@ router
   .put(checkObjectId, protect, postOwnerValidate, editPost)
   .delete(checkObjectId, protect, postOwnerValidate, deletePost);
 router.route("/:id/like").post(checkObjectId, protect, likePost);
+router
+  .route("/:id/pin")
+  .post(checkObjectId, protect, postOwnerValidate, pinPost);
 
 export default router;

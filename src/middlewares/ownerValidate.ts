@@ -7,6 +7,16 @@ import AuthenticationError from "../errors/AuthenticationError";
 import BadRequestError from "../errors/BadRequestError";
 import Posts from "../models/Posts";
 import Comment from "../models/Comment";
+import { IPosts } from "../@types/postsType";
+
+// * Extend Request interface to include user
+declare global {
+  namespace Express {
+    interface Request {
+      post?: IPosts;
+    }
+  }
+}
 
 /**
  * Used for Posts' edit and delete routes, validates if the user that's
@@ -30,6 +40,8 @@ const postOwnerValidate = asyncHandler(
     if (post.ownerId.id != req.user?.id) {
       throw new AuthenticationError();
     }
+
+    req.post = post;
 
     next();
   }

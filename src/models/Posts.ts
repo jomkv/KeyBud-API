@@ -27,6 +27,11 @@ const postsSchema: Schema = new Schema<IPosts>(
       required: false,
       default: false,
     },
+    isPinned: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   { timestamps: true }
 );

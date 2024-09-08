@@ -209,4 +209,35 @@ const likePost = asyncHandler(
   }
 );
 
-export { createPost, getPost, deletePost, editPost, likePost, getManyPosts };
+// @desc Pins/Unpins a post
+// @route POST /api/posts/:postId/pin
+// @access Private
+const pinPost = asyncHandler(async (req: Request, res: Response) => {
+  const post: IPosts | null = req.post || (await Posts.findById(req.params.id));
+
+  if (!post) {
+    throw new BadRequestError("Post not found");
+  }
+
+  post.isPinned = !post?.isPinned;
+
+  try {
+    await post.save();
+
+    res.status(200).json({
+      message: `Post successfully ${post.isPinned ? "Pinned" : "Unpinned"}`,
+    });
+  } catch (error) {
+    throw new DatabaseError();
+  }
+});
+
+export {
+  createPost,
+  getPost,
+  deletePost,
+  editPost,
+  likePost,
+  getManyPosts,
+  pinPost,
+};
