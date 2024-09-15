@@ -127,6 +127,8 @@ const editPost = asyncHandler(
     const { title, description } = req.body;
     const postId = req.params.id;
 
+    // TODO: Add image update
+
     if (!title || !description) {
       throw new BadRequestError("Incomplete input");
     }
@@ -161,7 +163,8 @@ const deletePost = asyncHandler(
       throw new BadRequestError("Post not found");
     }
 
-    const session = await mongoose.startSession();
+    const session: mongoose.ClientSession = await mongoose.startSession();
+    session.startTransaction();
 
     try {
       await Posts.findByIdAndDelete(postId).session(session);
