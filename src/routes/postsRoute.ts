@@ -20,7 +20,7 @@ const router: Router = Router();
 
 router
   .route("/")
-  .post(protect, upload.array("images", 2), createPost)
+  .post(protect, upload.array("images", 4), createPost)
   .get(optionalJwt, getManyPosts);
 router
   .route("/:id")
