@@ -117,9 +117,10 @@ const createPost = asyncHandler(
 // @access Private
 const editPost = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const { title, description, isImageChange } = req.body;
+    const { title, description }: IPosts = req.body;
     const rawFiles: any = req.files;
     const post = req.post;
+    const isImageChange = req.body.isImageChange === "true";
 
     if (!title || !description) {
       throw new BadRequestError("Incomplete input");

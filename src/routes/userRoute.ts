@@ -8,6 +8,7 @@ import {
   getUserLikes,
   getUserProfile,
   getUserPosts,
+  editProfile,
 } from "../controllers/userController";
 
 import { optionalJwt, protect } from "../middlewares/auth";
@@ -15,6 +16,8 @@ import checkObjectId from "../middlewares/checkObjectId";
 import upload from "../utils/upload";
 
 const router: Router = Router();
+
+router.route("/").put(protect, editProfile);
 
 router.route("/:id/likes").get(optionalJwt, getUserLikes);
 router.route("/:id/posts").get(optionalJwt, getUserPosts);

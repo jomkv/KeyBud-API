@@ -212,6 +212,20 @@ const getUserPosts = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+// @desc Edit user profile
+// @route PUT /api/user
+// @access Private
+const editProfile = asyncHandler(async (req: Request, res: Response) => {
+  // * TODO: Implement edit profile
+  // * 1. Get user from req.user
+  // * 2. Update user detail(s)
+  // *    - username
+  // *    - switchType
+  // *    - icon
+
+  res.status(200).json({ message: "This endpoint is not yet implemented" });
+});
+
 export {
   registerUser,
   loginUser,
@@ -220,4 +234,5 @@ export {
   getUserLikes,
   getUserProfile,
   getUserPosts,
+  editProfile,
 };
