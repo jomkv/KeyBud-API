@@ -25,7 +25,13 @@ router
 router
   .route("/:id")
   .get(checkObjectId, optionalJwt, getPost)
-  .put(checkObjectId, protect, postOwnerValidate, editPost)
+  .put(
+    checkObjectId,
+    protect,
+    postOwnerValidate,
+    upload.array("images", 4),
+    editPost
+  )
   .delete(checkObjectId, protect, postOwnerValidate, deletePost);
 router.route("/:id/like").post(checkObjectId, protect, likePost);
 router

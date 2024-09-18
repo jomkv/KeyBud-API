@@ -42,4 +42,22 @@ export const uploadImage = async (imageBuffer: Buffer): Promise<IPhoto> => {
   }
 };
 
+export const uploadImages = async (
+  images: Express.Multer.File[]
+): Promise<IPhoto[]> => {
+  return await Promise.all(
+    images.map(async (image: Express.Multer.File) => uploadImage(image.buffer))
+  );
+};
+
+export const deleteImages = async (images: IPhoto[]): Promise<void> => {
+  try {
+    const public_ids: string[] = images.map((image) => image.id);
+
+    await cloudinary.api.delete_resources(public_ids);
+  } catch (err) {
+    // do nothing if error
+  }
+};
+
 export const getImageInfo = async (publicId: string) => {};

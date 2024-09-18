@@ -8,7 +8,7 @@ interface IPosts extends Document {
   title: String;
   description: String;
   ownerId: IUserPayload;
-  images?: IPhoto[];
+  images: IPhoto[];
   isEditted: Boolean;
   isPinned?: Boolean;
   createdAt: string;

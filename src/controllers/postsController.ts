@@ -3,7 +3,7 @@ import User from "../models/User";
 import Comment from "../models/Comment";
 import PostLike from "../models/PostLike";
 import { IPosts } from "../@types/postsType";
-import { uploadImage } from "../utils/cloudinary";
+import { deleteImages, uploadImage, uploadImages } from "../utils/cloudinary";
 import IPhoto from "../@types/photoType";
 import { IUserPayload } from "../@types/userType";
 import {
@@ -80,24 +80,17 @@ const createPost = asyncHandler(
     let images: IPhoto[] = [];
 
     if (rawFiles) {
-      // upload images to cloudinary
-      images = await Promise.all(
-        rawFiles.map(async (image: Express.Multer.File) =>
-          uploadImage(image.buffer)
-        )
-      );
+      images = await uploadImages(rawFiles);
     }
 
-    const owner: IUserPayload | null = await User.findById(req.user?.id);
-
-    if (!owner) {
+    if (!req.user) {
       throw new BadRequestError("User not found");
     }
 
     const newPost = await Posts.create({
       title: title,
       description: description,
-      ownerId: owner.id,
+      ownerId: req.user.id,
       images: images,
     });
 
@@ -109,7 +102,7 @@ const createPost = asyncHandler(
           title: newPost.title,
           description: newPost.description,
           images: newPost.images,
-          owner: owner?.username,
+          owner: req.user.username,
           ownerId: newPost.ownerId,
         },
       });
@@ -124,27 +117,41 @@ const createPost = asyncHandler(
 // @access Private
 const editPost = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const { title, description } = req.body;
-    const postId = req.params.id;
-
-    // TODO: Add image update
+    const { title, description, isImageChange } = req.body;
+    const rawFiles: any = req.files;
+    const post = req.post;
 
     if (!title || !description) {
       throw new BadRequestError("Incomplete input");
     }
 
-    const updatedPost = await Posts.findByIdAndUpdate(
-      postId,
-      { title, description, isEditted: true },
-      { new: true } // returns the updated object
-    );
+    if (!post) {
+      throw new BadRequestError("Post not found");
+    }
 
-    if (updatedPost) {
+    const oldImages: IPhoto[] = post.images;
+    let images: IPhoto[] = [...oldImages];
+
+    if (rawFiles && isImageChange) {
+      images = await uploadImages(rawFiles);
+    }
+
+    post.title = title;
+    post.description = description;
+    post.images = images;
+
+    try {
+      await post.save();
+
+      if (rawFiles && isImageChange) {
+        await deleteImages(oldImages);
+      }
+
       res.status(200).json({
         message: "Post successfully updated",
-        updatedPost,
+        updatedPost: post,
       });
-    } else {
+    } catch (error) {
       throw new DatabaseError();
     }
   }
@@ -155,9 +162,7 @@ const editPost = asyncHandler(
 // @access Private
 const deletePost = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const postId = req.params.id;
-
-    const post = await Posts.findById(postId);
+    const post = req.post;
 
     if (!post) {
       throw new BadRequestError("Post not found");
@@ -167,13 +172,15 @@ const deletePost = asyncHandler(
     session.startTransaction();
 
     try {
-      await Posts.findByIdAndDelete(postId).session(session);
+      await Posts.findByIdAndDelete(post.id).session(session);
       await Comment.deleteMany({
-        repliesTo: postId,
+        repliesTo: post.id,
       }).session(session);
-      await PostLike.deleteMany({ post: postId }).session(session);
+      await PostLike.deleteMany({ post: post.id }).session(session);
 
       await session.commitTransaction();
+
+      await deleteImages(post.images);
 
       res.status(200).json({
         message: "Post Deletion successful",
@@ -216,7 +223,7 @@ const likePost = asyncHandler(
 // @route POST /api/posts/:postId/pin
 // @access Private
 const pinPost = asyncHandler(async (req: Request, res: Response) => {
-  const post: IPosts | null = req.post || (await Posts.findById(req.params.id));
+  const post = req.post;
 
   if (!post) {
     throw new BadRequestError("Post not found");
