@@ -50,6 +50,9 @@ const protect = asyncHandler(
       if (err instanceof jwt.JsonWebTokenError) {
         throw new Error("Invalid Token");
       } else if (err instanceof jwt.TokenExpiredError) {
+        // TODO: refresh token
+        // implement here
+
         throw new Error("Token expired");
       } else {
         throw new Error("Unable to decode JWT Token");
