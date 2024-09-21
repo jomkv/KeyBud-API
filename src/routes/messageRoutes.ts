@@ -2,7 +2,7 @@ import { Router } from "express";
 
 import {
   createMessage,
-  getMessages,
+  getConversation,
   getUserConversations,
 } from "../controllers/messageController";
 
@@ -13,7 +13,7 @@ import checkObjectId from "../middlewares/checkObjectId";
 const router: Router = Router();
 
 router.route("/send/:id").post(checkObjectId, protect, createMessage);
-router.route("/:id").get(checkObjectId, protect, getMessages);
+router.route("/:id").get(checkObjectId, protect, getConversation);
 router.route("/").get(protect, getUserConversations);
 
 export default router;

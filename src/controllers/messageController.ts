@@ -61,28 +61,33 @@ const createMessage = asyncHandler(
   }
 );
 
-// @desc Gets the messages between the current user and the receiver
-// @route GET /api/message/:receiverId
+// @desc Gets the messages from conversation
+// @route GET /api/message/:conversationId
 // @access Private
-const getMessages = asyncHandler(
+const getConversation = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const receiverId = req.params.id;
-    const senderId = req.user?.id;
+    const conversation = await Conversation.findById(req.params.id);
 
-    const conversation = await Conversation.findOne({
-      participants: { $all: [senderId, receiverId] },
-    }).populate("messages");
-
-    if (conversation) {
-      res.status(200).json({
-        message: "Conversation found",
-        messages: conversation.messages,
-      });
-    } else {
-      res.status(200).json({
-        message: "No conversation found between these users",
-      });
+    if (!conversation) {
+      throw new BadRequestError("Conversation not found");
     }
+
+    // validate if user is part of the conversation
+    if (req.user && !conversation.participants.includes(req.user?.id)) {
+      throw new AuthenticationError();
+    }
+
+    // populate only after validation to save resources
+    await conversation.populate("messages");
+    await conversation.populate({
+      path: "participants",
+      select: "-password",
+    });
+
+    res.status(200).json({
+      message: "Conversation found",
+      conversation,
+    });
   }
 );
 
@@ -95,7 +100,13 @@ const getUserConversations = asyncHandler(
 
     const conversation = await Conversation.find({
       participants: userId,
-    }).populate("messages");
+    })
+      .populate({ path: "participants", select: "-password" })
+      .populate({
+        path: "messages",
+        options: { sort: { createdAt: -1 } }, // get latest message
+        perDocumentLimit: 1,
+      });
 
     if (conversation) {
       res.status(200).json({
@@ -110,4 +121,4 @@ const getUserConversations = asyncHandler(
   }
 );
 
-export { createMessage, getMessages, getUserConversations };
+export { createMessage, getConversation, getUserConversations };
