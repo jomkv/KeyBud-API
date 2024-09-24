@@ -4,6 +4,7 @@ import asyncHandler from "express-async-handler";
 import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import connectSocket from "./config/socket";
 
 // * Local Imports
 import connectDB from "./config/db";
@@ -47,9 +48,11 @@ app.all(
 app.use(errorHandler);
 
 connectDB().then(() => {
-  app.listen(port, () => {
+  const server = app.listen(port, () => {
     console.log(`Connected successfully on port ${port}`);
   });
+
+  connectSocket(server);
 });
 
 // export default app;
