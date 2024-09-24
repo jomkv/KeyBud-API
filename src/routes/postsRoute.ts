@@ -14,7 +14,7 @@ import {
 import { protect, optionalJwt } from "../middlewares/auth";
 import checkObjectId from "../middlewares/checkObjectId";
 import { postOwnerValidate } from "../middlewares/ownerValidate";
-import upload from "../utils/upload";
+import upload from "../config/upload";
 
 const router: Router = Router();
 

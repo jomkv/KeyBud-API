@@ -1,4 +1,4 @@
-import { CustomError } from "../utils/customError";
+import CustomError from "./CustomError";
 
 export default class DatabaseError extends CustomError {
   StatusCode = 500;

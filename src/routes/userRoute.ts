@@ -13,7 +13,7 @@ import {
 
 import { optionalJwt, protect } from "../middlewares/auth";
 import checkObjectId from "../middlewares/checkObjectId";
-import upload from "../utils/upload";
+import upload from "../config/upload";
 
 const router: Router = Router();
 
