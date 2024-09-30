@@ -1,5 +1,11 @@
 import { Types, Model } from "mongoose";
 import IPhoto from "./photoType";
+import { Socket } from "socket.io";
+
+interface IUserSocket {
+  id: string;
+  socket: Socket;
+}
 
 interface IUser {
   username: string;
@@ -25,4 +31,4 @@ interface IUserPayload {
   icon?: IPhoto;
 }
 
-export { IUser, IUserPayload, IUserMethods, UserModel };
+export { IUser, IUserPayload, IUserMethods, UserModel, IUserSocket };
