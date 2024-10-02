@@ -1,10 +1,10 @@
 import Conversation from "../models/Conversation";
 import Message from "../models/Message";
-import { IConversation, IMessage } from "../@types/messageType";
+import { IMessage } from "../@types/messageType";
+import { getUserSockets } from "../utils/userSockets";
 
 // * Libraries
 import asyncHandler from "express-async-handler";
-import { Types } from "mongoose";
 import { Request, Response } from "express";
 
 // * Custom Errors
@@ -50,6 +50,15 @@ const createMessage = asyncHandler(
     if (newMessage) {
       conversation.messages.push(newMessage._id); // push message id to the conversation's messages array
       await conversation.save(); // save conversation document
+
+      const participantSockets = getUserSockets(
+        senderId as unknown as string,
+        receiverId as unknown as string
+      );
+
+      participantSockets.forEach((socket) => {
+        socket.socket.emit("newMessage", newMessage);
+      });
 
       res.status(201).json({
         message: "Message successfuly sent",
