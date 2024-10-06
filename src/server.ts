@@ -11,8 +11,8 @@ import connectDB from "./config/db";
 import errorHandler from "./middlewares/error";
 import userRouter from "./routes/userRoute";
 import postsRouter from "./routes/postsRoute";
-import commentRouter from "./routes/commentRoutes";
-import messageRouter from "./routes/messageRoutes";
+import commentRouter from "./routes/commentRoute";
+import messageRouter from "./routes/messageRoute";
 
 // * App
 dotenv.config();
