@@ -25,20 +25,17 @@ import DatabaseError from "../errors/DatabaseError";
 // @access Public
 const getManyPosts = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const posts: any[] = await Posts.find()
-      .sort({ createdAt: -1 }) // sort descending
-      .limit(10);
+    const posts: any[] = await getMultiplePostProperties(
+      await Posts.find()
+        .sort({ createdAt: -1 }) // sort descending
+        .limit(10),
+      req.user
+    );
 
-    if (posts) {
-      const postPayload = await getMultiplePostProperties(posts, req.user);
-
-      res.status(200).json({
-        message: "Successfuly fetched posts",
-        posts: postPayload,
-      });
-    } else {
-      throw new DatabaseError();
-    }
+    res.status(200).json({
+      message: "Successfuly fetched posts",
+      posts: posts,
+    });
   }
 );
 
