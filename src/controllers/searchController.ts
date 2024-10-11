@@ -1,7 +1,6 @@
-import Conversation from "../models/Conversation";
-import Message from "../models/Message";
-import { IMessage } from "../@types/messageType";
-import { getUserSockets } from "../utils/userSockets";
+import Posts from "../models/Posts";
+import User from "../models/User";
+import { getMultiplePostProperties } from "../utils/postHelper";
 
 // * Libraries
 import asyncHandler from "express-async-handler";
@@ -23,13 +22,16 @@ const search = asyncHandler(
       throw new BadRequestError("Incomplete input, query is required");
     }
 
-    // search for posts
-    // const posts = await Post.find({ $text: { $search: query } }).populate("author", "username");
+    const posts = await getMultiplePostProperties(
+      await Posts.find({ $text: { $search: query } }),
+      req.user
+    );
 
-    // search for users
-    // const users = await User.find({ $text: { $search: query } }).select("username");
+    const users = await User.find({
+      username: { $regex: query, $options: "i" },
+    }).select("-password"); // option "i" makes the search case-insensitive
 
-    res.status(200).json({ message: "Search results go here" });
+    res.status(200).json({ message: "Search results go here", posts, users });
   }
 );
 
@@ -44,10 +46,11 @@ const searchUsers = asyncHandler(
       throw new BadRequestError("Incomplete input, query is required");
     }
 
-    // search for users
-    // const users = await User.find({ $text: { $search: query } }).select("username");
+    const users = await User.find({
+      username: { $regex: query, $options: "i" },
+    }).select("-password");
 
-    res.status(200).json({ message: "Search results go here" });
+    res.status(200).json({ message: "Search results go here", users });
   }
 );
 
@@ -62,10 +65,12 @@ const searchPosts = asyncHandler(
       throw new BadRequestError("Incomplete input, query is required");
     }
 
-    // search for posts
-    // const posts = await Post.find({ $text: { $search: query } }).populate("author", "username");
+    const posts = await getMultiplePostProperties(
+      await Posts.find({ $text: { $search: query } }),
+      req.user
+    );
 
-    res.status(200).json({ message: "Search results go here" });
+    res.status(200).json({ message: "Search results go here", posts });
   }
 );
 

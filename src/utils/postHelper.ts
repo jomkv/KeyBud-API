@@ -55,6 +55,10 @@ const getMultiplePostProperties = async (
   posts: any[],
   user: IUserPayload | undefined
 ): Promise<IPostWithProps[]> => {
+  if (posts.length === 0) {
+    return posts;
+  }
+
   const postPayload: IPostWithProps[] = await Promise.all(
     posts.map(async (post) => {
       return await getPostProperties(post, user);

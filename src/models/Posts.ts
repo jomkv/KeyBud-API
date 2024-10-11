@@ -36,6 +36,9 @@ const postsSchema: Schema = new Schema<IPosts>(
   { timestamps: true }
 );
 
+// allow text search for title and description
+postsSchema.index({ title: "text", description: "text" });
+
 // auto populate
 postsSchema.pre(["find", "findOne"], function (next) {
   this.populate({
