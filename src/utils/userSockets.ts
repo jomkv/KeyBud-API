@@ -1,4 +1,3 @@
-import { Types } from "mongoose";
 import { IUserSocket } from "../@types/userType";
 
 const userSockets: IUserSocket[] = [];

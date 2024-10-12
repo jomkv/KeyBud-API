@@ -15,7 +15,7 @@ const getUserOrNull = (socket: Socket): IUserPayload | null => {
     throw new Error("JWT_SECRET not defined in the environment");
   }
 
-  const token = socket.request.headers.cookie?.split("=")[1];
+  const token = socket.request.headers.cookie?.split(";")[0].split("=")[1];
 
   if (token) {
     try {
