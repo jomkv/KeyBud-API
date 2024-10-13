@@ -212,6 +212,18 @@ const getUserPosts = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+// @desc Get users and their ids
+// @route GET /api/user
+// @access Public
+const getUsersAndIds = asyncHandler(async (req: Request, res: Response) => {
+  const users = await User.find().select("username _id");
+
+  res.status(200).json({
+    message: "Getting user and their ids success",
+    users,
+  });
+});
+
 // @desc Edit user profile
 // @route PUT /api/user
 // @access Private
@@ -234,5 +246,6 @@ export {
   getUserLikes,
   getUserProfile,
   getUserPosts,
+  getUsersAndIds,
   editProfile,
 };
