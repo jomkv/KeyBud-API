@@ -32,6 +32,16 @@ const registerUser = asyncHandler(
       throw new BadRequestError("Incomplete input");
     }
 
+    // Validate if username contains valid characters
+    // From: https://stackoverflow.com/a/59442184/17829428
+    if (!validator.matches(username, "^[a-zA-Z0-9_.-]*$")) {
+      throw new BadRequestError("Username contains invalid characters");
+    }
+
+    if (username.length < 3) {
+      throw new BadRequestError("Username must be at least 3 characters long");
+    }
+
     if (!validator.isEmail(email)) {
       throw new BadRequestError("Invalid email");
     }
