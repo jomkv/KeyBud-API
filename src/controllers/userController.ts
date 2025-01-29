@@ -9,6 +9,8 @@ import {
   getMultiplePostProperties,
   getPostProperties,
 } from "../utils/postHelper";
+import { IPopulatedPostLike, IPostWithProps } from "../@types/postsType";
+import Conversation from "../models/Conversation";
 
 // * Libraries
 import { Request, Response } from "express";
@@ -18,7 +20,6 @@ import validator from "validator";
 // * Custom Errors
 import BadRequestError from "../errors/BadRequestError";
 import DatabaseError from "../errors/DatabaseError";
-import { IPopulatedPostLike, IPostWithProps } from "../@types/postsType";
 
 // @desc Create new user
 // @route POST /api/user/register
@@ -222,11 +223,19 @@ const getUserPosts = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-// @desc Get users and their ids
+// @desc Get users and their ids for selecting convo recipient
 // @route GET /api/user
-// @access Public
+// @access Private
 const getUsersAndIds = asyncHandler(async (req: Request, res: Response) => {
-  const users = await User.find().select("username _id");
+  let users = await User.find().select("username _id");
+
+  const conversations = await Conversation.find({
+    participants: req.user?._id,
+  });
+
+  conversations.forEach((convo) => {
+    users = users.filter((user) => convo.participants.includes(user.id));
+  });
 
   res.status(200).json({
     message: "Getting user and their ids success",
