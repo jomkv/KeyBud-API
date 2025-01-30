@@ -13,7 +13,7 @@ import AuthenticationError from "../errors/AuthenticationError";
 
 // @desc Search for posts and/or users
 // @route POST /api/search
-// @access Private
+// @access Public
 const search = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { query } = req.body;
@@ -37,7 +37,7 @@ const search = asyncHandler(
 
 // @desc Search for users only
 // @route POST /api/search/users
-// @access Private
+// @access Public
 const searchUsers = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { query } = req.body;
@@ -56,7 +56,7 @@ const searchUsers = asyncHandler(
 
 // @desc Search for posts only
 // @route POST /api/search/posts
-// @access Private
+// @access Public
 const searchPosts = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { query } = req.body;
