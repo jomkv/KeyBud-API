@@ -66,7 +66,7 @@ const commentOwnerValidate = asyncHandler(
       throw new BadRequestError("Invalid commentId, comment not found");
     }
 
-    if (comment.ownerId != req.user?.id) {
+    if (comment.ownerId._id != req.user?.id) {
       throw new AuthenticationError();
     }
 
