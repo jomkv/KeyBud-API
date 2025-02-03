@@ -9,6 +9,7 @@ import {
   getUserProfile,
   getUserPosts,
   getUsersAndIds,
+  getMe,
   editProfile,
 } from "../controllers/userController";
 
@@ -18,7 +19,12 @@ import upload from "../config/upload";
 
 const router: Router = Router();
 
-router.route("/").get(protect, getUsersAndIds).put(protect, editProfile);
+router
+  .route("/")
+  .get(protect, getUsersAndIds)
+  .put(protect, upload.single("icon"), editProfile);
+
+router.route("/me").get(protect, getMe);
 
 router.route("/:id/likes").get(optionalJwt, getUserLikes);
 router.route("/:id/posts").get(optionalJwt, getUserPosts);

@@ -26,7 +26,7 @@ import DatabaseError from "../errors/DatabaseError";
 // @access Public
 const registerUser = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const { username, password, email, switchType }: IUser = req.body;
+    const { username, password, email }: IUser = req.body;
 
     // Validate user input
     if (!username || !password || !email) {
@@ -60,7 +60,6 @@ const registerUser = asyncHandler(
     const newUser = await User.create({
       username,
       email,
-      switchType,
       password,
     });
 
@@ -134,6 +133,25 @@ const logoutUser = (req: Request, res: Response): void => {
 const getUserProfile = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const user: IUser | unknown = await User.findById(req.params.id).select(
+      "-password"
+    );
+
+    if (!user) {
+      throw new BadRequestError("User not found");
+    }
+
+    res.status(200).json({
+      user,
+    });
+  }
+);
+
+// @desc Get user profile
+// @route GET /api/user/me
+// @access Public
+const getMe = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const user: IUser | unknown = await User.findById(req.user?.id).select(
       "-password"
     );
 
@@ -247,14 +265,30 @@ const getUsersAndIds = asyncHandler(async (req: Request, res: Response) => {
 // @route PUT /api/user
 // @access Private
 const editProfile = asyncHandler(async (req: Request, res: Response) => {
-  // * TODO: Implement edit profile
-  // * 1. Get user from req.user
-  // * 2. Update user detail(s)
-  // *    - username
-  // *    - switchType
-  // *    - icon
+  const { username, switchType } = req.body;
+  const rawIcon: any = req.file;
+  const user = await User.findById(req.user?._id);
 
-  res.status(200).json({ message: "This endpoint is not yet implemented" });
+  if (!user) {
+    throw new BadRequestError("User not found");
+  }
+
+  const icon = rawIcon ? await uploadImage(rawIcon) : null;
+
+  user.username = username || user.username;
+  user.switchType = switchType || user.switchType;
+  user.icon = icon || user.icon;
+
+  try {
+    await user.save();
+
+    res.status(200).json({
+      message: "User Profile updated",
+      updatedUser: user,
+    });
+  } catch (error) {
+    throw new DatabaseError();
+  }
 });
 
 export {
@@ -266,5 +300,6 @@ export {
   getUserProfile,
   getUserPosts,
   getUsersAndIds,
+  getMe,
   editProfile,
 };
