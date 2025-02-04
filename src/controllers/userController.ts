@@ -26,10 +26,10 @@ import DatabaseError from "../errors/DatabaseError";
 // @access Public
 const registerUser = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const { username, password, email }: IUser = req.body;
+    const { username, password, email, switchType }: IUser = req.body;
 
     // Validate user input
-    if (!username || !password || !email) {
+    if (!username || !password || !email || !switchType) {
       throw new BadRequestError("Incomplete input");
     }
 
@@ -61,6 +61,7 @@ const registerUser = asyncHandler(
       username,
       email,
       password,
+      switchType,
     });
 
     if (newUser) {
@@ -70,6 +71,7 @@ const registerUser = asyncHandler(
           id: newUser._id,
           username: newUser.username,
           email: newUser.email,
+          switchType: newUser.switchType,
         },
       });
     } else {
