@@ -24,7 +24,7 @@ const createMessage = asyncHandler(
     }
 
     const receiverId = req.params.id;
-    const senderId = req.user?.id;
+    const senderId = req.kbUser?.id;
 
     let conversation = await Conversation.findOne({
       participants: { $all: [senderId, receiverId] },
@@ -82,7 +82,7 @@ const getConversation = asyncHandler(
     }
 
     // validate if user is part of the conversation
-    if (req.user && !conversation.participants.includes(req.user?.id)) {
+    if (req.kbUser && !conversation.participants.includes(req.kbUser?.id)) {
       throw new AuthenticationError();
     }
 
@@ -105,7 +105,7 @@ const getConversation = asyncHandler(
 // @access Private
 const getUserConversations = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const userId = req.user?.id;
+    const userId = req.kbUser?.id;
 
     const conversation = await Conversation.find({
       participants: userId,

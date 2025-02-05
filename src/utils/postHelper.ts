@@ -1,12 +1,12 @@
-import { IUserPayload } from "../@types/userType";
+import { IUserDocument, IUserPayload } from "../@types/userType";
 import PostLike from "../models/PostLike";
 import Comment from "../models/Comment";
 import { IPostWithProps } from "../@types/postsType";
 
-// * Helper function to check if a post is liked by user from req.user
+// * Helper function to check if a post is liked by user from req.kbUser
 const isPostLiked = async (
   postId: string,
-  user: IUserPayload | undefined // from req.user
+  user: IUserDocument | undefined // from req.kbUser
 ): Promise<boolean> => {
   if (user) {
     const like = await PostLike.findOne({ user: user.id, post: postId });
@@ -29,7 +29,7 @@ const isPostLiked = async (
  */
 const getPostProperties = async (
   postDocument: any,
-  user: IUserPayload | undefined
+  user: IUserDocument | undefined
 ): Promise<IPostWithProps> => {
   const post: IPostWithProps = postDocument.toObject();
 
@@ -53,7 +53,7 @@ const getPostProperties = async (
  */
 const getMultiplePostProperties = async (
   posts: any[],
-  user: IUserPayload | undefined
+  user: IUserDocument | undefined
 ): Promise<IPostWithProps[]> => {
   if (posts.length === 0) {
     return posts;

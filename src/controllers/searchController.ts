@@ -24,7 +24,7 @@ const search = asyncHandler(
 
     const posts = await getMultiplePostProperties(
       await Posts.find({ $text: { $search: query } }),
-      req.user
+      req.kbUser
     );
 
     const users = await User.find({
@@ -67,7 +67,7 @@ const searchPosts = asyncHandler(
 
     const posts = await getMultiplePostProperties(
       await Posts.find({ $text: { $search: query } }),
-      req.user
+      req.kbUser
     );
 
     res.status(200).json({ message: "Search results go here", posts });

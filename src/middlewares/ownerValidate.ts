@@ -37,7 +37,7 @@ const postOwnerValidate = asyncHandler(
       throw new BadRequestError("Invalid postId, post not found");
     }
 
-    if (post.ownerId.id != req.user?.id) {
+    if (post.ownerId.id != req.kbUser?.id) {
       throw new AuthenticationError();
     }
 
@@ -66,7 +66,7 @@ const commentOwnerValidate = asyncHandler(
       throw new BadRequestError("Invalid commentId, comment not found");
     }
 
-    if (comment.ownerId._id != req.user?.id) {
+    if (comment.ownerId._id != req.kbUser?.id) {
       throw new AuthenticationError();
     }
 

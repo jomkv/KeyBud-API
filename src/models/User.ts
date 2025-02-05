@@ -1,4 +1,4 @@
-import { Schema, Types, model } from "mongoose";
+import { Schema, model } from "mongoose";
 import { IUser, UserModel, IUserMethods } from "../@types/userType";
 import photoSchema from "./schemas/photoSchema";
 import bcrypt from "bcryptjs";
@@ -17,7 +17,7 @@ const userSchema: Schema = new Schema<IUser, UserModel, IUserMethods>(
     },
     switchType: {
       type: String,
-      require: true,
+      require: false,
     },
     password: {
       type: String,

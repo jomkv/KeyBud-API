@@ -29,7 +29,7 @@ const getManyPosts = asyncHandler(
       await Posts.find()
         .sort({ createdAt: -1 }) // sort descending
         .limit(10),
-      req.user
+      req.kbUser
     );
 
     res.status(200).json({
@@ -49,12 +49,12 @@ const getPost = asyncHandler(
     let post: any = await Posts.findById(postId);
 
     if (post) {
-      post = await getPostProperties(post, req.user);
+      post = await getPostProperties(post, req.kbUser);
 
       res.status(200).json({
         message: "Post found!",
         post,
-        user: req.user,
+        user: req.kbUser,
       });
     } else {
       throw new BadRequestError("Post not found");
@@ -80,14 +80,14 @@ const createPost = asyncHandler(
       images = await uploadImages(rawFiles);
     }
 
-    if (!req.user) {
+    if (!req.kbUser) {
       throw new BadRequestError("User not found");
     }
 
     const newPost = await Posts.create({
       title: title,
       description: description,
-      ownerId: req.user.id,
+      ownerId: req.kbUser.id,
       images: images,
     });
 
@@ -99,7 +99,7 @@ const createPost = asyncHandler(
           title: newPost.title,
           description: newPost.description,
           images: newPost.images,
-          owner: req.user.username,
+          owner: req.kbUser.username,
           ownerId: newPost.ownerId,
         },
       });
@@ -202,7 +202,7 @@ const deletePost = asyncHandler(
 const likePost = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const postId = req.params.id;
-    const userId = req.user?.id;
+    const userId = req.kbUser?.id;
 
     const isLiked = await PostLike.findOne({ user: userId, post: postId });
 

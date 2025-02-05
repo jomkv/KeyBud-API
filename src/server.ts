@@ -4,7 +4,10 @@ import asyncHandler from "express-async-handler";
 import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+
+// * Config
 import { io } from "./config/socket";
+import passport from "./config/passportConfig";
 
 // * Local Imports
 import connectDB from "./config/db";
@@ -32,6 +35,7 @@ app.use(express.urlencoded({ extended: false })); // allow destructuring of req.
 app.use(express.json());
 
 app.use(cookieParser());
+app.use(passport.initialize());
 
 // * Routes
 app.use("/api/user", userRouter);

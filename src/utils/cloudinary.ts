@@ -1,7 +1,7 @@
 import { v2 as cloudinary, UploadApiResponse } from "cloudinary";
 import dotenv from "dotenv";
-import DatabaseError from "../errors/DatabaseError";
 import IPhoto from "../@types/photoType";
+import BadRequestError from "../errors/BadRequestError";
 dotenv.config();
 
 cloudinary.config({
@@ -25,7 +25,9 @@ export const uploadImage = async (imageBuffer: Buffer): Promise<IPhoto> => {
       cloudinary.uploader
         .upload_stream((error, res: UploadApiResponse) => {
           if (error) {
-            throw new DatabaseError();
+            throw new BadRequestError(
+              "Something went wrong while uploading image"
+            );
           }
 
           const photo: IPhoto = {
@@ -38,7 +40,7 @@ export const uploadImage = async (imageBuffer: Buffer): Promise<IPhoto> => {
         .end(imageBuffer)
     );
   } catch (err) {
-    throw new DatabaseError();
+    throw new BadRequestError("Something went wrong while uploading image");
   }
 };
 

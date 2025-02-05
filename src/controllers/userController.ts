@@ -153,7 +153,7 @@ const getUserProfile = asyncHandler(
 // @access Public
 const getMe = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const user: IUser | unknown = await User.findById(req.user?.id).select(
+    const user: IUser | unknown = await User.findById(req.kbUser?.id).select(
       "-password"
     );
 
@@ -214,7 +214,7 @@ const getUserLikes = asyncHandler(async (req: Request, res: Response) => {
     likedPosts = await Promise.all(
       likes.map(
         async (like: IPopulatedPostLike) =>
-          await getPostProperties(like.post, req.user)
+          await getPostProperties(like.post, req.kbUser)
       )
     );
   }
@@ -234,7 +234,7 @@ const getUserPosts = asyncHandler(async (req: Request, res: Response) => {
   let userPostsPayload: IPostWithProps[] = [];
 
   if (userPosts) {
-    userPostsPayload = await getMultiplePostProperties(userPosts, req.user);
+    userPostsPayload = await getMultiplePostProperties(userPosts, req.kbUser);
   }
 
   res.status(200).json({
@@ -250,7 +250,7 @@ const getUsersAndIds = asyncHandler(async (req: Request, res: Response) => {
   let users = await User.find().select("username _id");
 
   const conversations = await Conversation.find({
-    participants: req.user?._id,
+    participants: req.kbUser?._id,
   });
 
   conversations.forEach((convo) => {
@@ -269,7 +269,7 @@ const getUsersAndIds = asyncHandler(async (req: Request, res: Response) => {
 const editProfile = asyncHandler(async (req: Request, res: Response) => {
   const { username, switchType } = req.body;
   const rawIcon: any = req.file;
-  const user = await User.findById(req.user?._id);
+  const user = await User.findById(req.kbUser?._id);
 
   if (!user) {
     throw new BadRequestError("User not found");

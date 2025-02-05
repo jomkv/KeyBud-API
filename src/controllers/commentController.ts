@@ -51,7 +51,7 @@ const getComment = asyncHandler(
         commentId: commentId,
         comment: comment.comment,
         commentLikes: likeCount,
-        isCommentOwner: comment.ownerId == req.user?.id,
+        isCommentOwner: comment.ownerId == req.kbUser?.id,
       };
 
       res.status(200).json({
@@ -86,7 +86,7 @@ const createComment = asyncHandler(
     // Create comment
     const newComment = await Comment.create({
       comment,
-      ownerId: req.user?.id,
+      ownerId: req.kbUser?.id,
       repliesTo: postId,
     });
 
@@ -167,7 +167,7 @@ const editComment = asyncHandler(
 const likeComment = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const commentId = req.params.id;
-    const userId = req.user?.id;
+    const userId = req.kbUser?.id;
 
     const isLiked: ICommentLike | null = await CommentLike.findOne({
       user: userId,

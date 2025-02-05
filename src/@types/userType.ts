@@ -1,4 +1,4 @@
-import { Types, Model } from "mongoose";
+import { Types, Model, Document } from "mongoose";
 import IPhoto from "./photoType";
 import { Socket } from "socket.io";
 
@@ -14,6 +14,8 @@ interface IUser {
   switchType: string;
   icon?: IPhoto;
 }
+
+interface IUserDocument extends IUser, Document {}
 
 interface IUserMethods {
   comparePassword(enteredPassword: string): Promise<boolean>;
@@ -31,4 +33,11 @@ interface IUserPayload {
   icon?: IPhoto;
 }
 
-export { IUser, IUserPayload, IUserMethods, UserModel, IUserSocket };
+export {
+  IUser,
+  IUserPayload,
+  IUserMethods,
+  UserModel,
+  IUserSocket,
+  IUserDocument,
+};

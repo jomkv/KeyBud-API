@@ -1,19 +1,42 @@
 // * Third party dependencies
-import jwt from "jsonwebtoken";
 import asyncHandler from "express-async-handler";
 import { Request, Response, NextFunction } from "express";
+import passport from "passport";
 
 // * Local imports
-import { IUserPayload } from "../@types/userType";
+import { IUserDocument } from "../@types/userType";
+import DatabaseError from "../errors/DatabaseError";
+import AuthenticationError from "../errors/AuthenticationError";
+import cookieExtractor from "../utils/cookieExtractor";
 
 // * Extend Request interface to include user
 declare global {
   namespace Express {
     interface Request {
-      user?: IUserPayload;
+      kbUser?: IUserDocument;
     }
   }
 }
+
+// * Get Passport's JWT Middleware
+const getJwtMiddleware = (req: Request, next: NextFunction) => {
+  return passport.authenticate(
+    "jwt",
+    { session: false },
+    (err: Error | null, user: IUserDocument | false) => {
+      if (err) {
+        throw new DatabaseError();
+      }
+
+      if (!user) {
+        throw new AuthenticationError();
+      }
+
+      req.kbUser = user;
+      next();
+    }
+  );
+};
 
 /**
  * Checks req cookies if JWT is provided
@@ -25,39 +48,16 @@ declare global {
  */
 const protect = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
-    // Check if JWT_SECRET exists at .env
-    if (!process.env.JWT_SECRET) {
-      throw new Error("JWT_SECRET not defined in the environment");
-    }
-
-    let token;
-
-    token = req.cookies.jwt;
+    const token = cookieExtractor(req);
 
     if (!token) {
       res.status(401);
       throw new Error("Not authorized, no token provided");
     }
 
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET) as IUserPayload;
+    const jwtMiddleware = getJwtMiddleware(req, next);
 
-      req.user = decoded;
-
-      next();
-    } catch (err) {
-      res.status(401);
-      if (err instanceof jwt.JsonWebTokenError) {
-        throw new Error("Invalid Token");
-      } else if (err instanceof jwt.TokenExpiredError) {
-        // TODO: refresh token
-        // implement here
-
-        throw new Error("Token expired");
-      } else {
-        throw new Error("Unable to decode JWT Token");
-      }
-    }
+    jwtMiddleware(req, res, next);
   }
 );
 
@@ -72,26 +72,15 @@ const protect = asyncHandler(
  */
 const optionalJwt = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
-    // Check if JWT_SECRET exists at .env
-    if (!process.env.JWT_SECRET) {
-      throw new Error("JWT_SECRET not defined in the environment");
+    const token = cookieExtractor(req);
+
+    if (!token) {
+      next();
     }
 
-    const token = req.cookies.jwt;
-    if (token) {
-      try {
-        const decoded = jwt.verify(
-          token,
-          process.env.JWT_SECRET
-        ) as IUserPayload;
+    const jwtMiddleware = getJwtMiddleware(req, next);
 
-        req.user = decoded;
-      } catch (err) {
-        // Do nothing
-      }
-    }
-
-    next();
+    jwtMiddleware(req, res, next);
   }
 );
 
