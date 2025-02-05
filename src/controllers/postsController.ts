@@ -204,6 +204,12 @@ const likePost = asyncHandler(
     const postId = req.params.id;
     const userId = req.kbUser?.id;
 
+    const post = await Posts.findById(req.params.id);
+
+    if (!post) {
+      throw new BadRequestError("Post not found");
+    }
+
     const isLiked = await PostLike.findOne({ user: userId, post: postId });
 
     if (isLiked) {
