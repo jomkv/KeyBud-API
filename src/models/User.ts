@@ -1,11 +1,5 @@
 import { Schema, model } from "mongoose";
-import {
-  IUser,
-  UserModel,
-  IUserMethods,
-  IUserDocument,
-} from "../@types/userType";
-import photoSchema from "./schemas/photoSchema";
+import { IUser, UserModel, IUserMethods } from "../@types/userType";
 import bcrypt from "bcryptjs";
 import BadRequestError from "../errors/BadRequestError";
 
@@ -26,19 +20,19 @@ const userSchema: Schema = new Schema<IUser, UserModel, IUserMethods>(
     },
     password: {
       type: String,
-      require: function (this: IUserDocument) {
-        return !this.googleId;
-      },
+      require: false,
     },
     icon: {
-      type: photoSchema,
+      type: String,
       required: false,
     },
     googleId: {
       type: String,
-      required: function (this: IUserDocument) {
-        return !this.password;
-      },
+      required: false,
+    },
+    usernameEditedAt: {
+      type: Date,
+      required: false,
     },
   },
   { timestamps: true }
@@ -55,6 +49,10 @@ userSchema.methods.comparePassword = async function (enteredPassword: string) {
 
 // Auto encrypt password using bcrypt
 userSchema.pre("save", async function (next) {
+  if (this.isModified("username")) {
+    this.usernameEditedAt = new Date();
+  }
+
   if (!this.isModified("password")) {
     return next();
   }

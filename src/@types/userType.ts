@@ -12,8 +12,9 @@ interface IUser {
   email: string;
   password?: string;
   switchType: string;
-  icon?: IPhoto;
+  icon?: string;
   googleId?: string;
+  usernameEditedAt?: Date;
 }
 
 interface IUserDocument extends IUser, Document {}
@@ -27,11 +28,12 @@ type UserModel = Model<IUser, {}, IUserMethods>;
 interface IUserPayload {
   id: Types.ObjectId;
   _id?: Types.ObjectId;
-  username?: String;
-  switchType: String;
+  username?: string;
+  switchType: string;
   password?: string;
-  email: String;
-  icon?: IPhoto;
+  email: string;
+  icon?: string;
+  usernameEditedAt?: Date;
 }
 
 export {
