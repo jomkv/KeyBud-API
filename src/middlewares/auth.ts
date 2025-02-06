@@ -75,7 +75,7 @@ const optionalJwt = asyncHandler(
     const token = cookieExtractor(req);
 
     if (!token) {
-      next();
+      return next();
     }
 
     const jwtMiddleware = getJwtMiddleware(req, next);
