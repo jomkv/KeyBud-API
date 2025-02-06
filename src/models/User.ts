@@ -1,14 +1,19 @@
 import { Schema, model } from "mongoose";
-import { IUser, UserModel, IUserMethods } from "../@types/userType";
+import {
+  IUser,
+  UserModel,
+  IUserMethods,
+  IUserDocument,
+} from "../@types/userType";
 import photoSchema from "./schemas/photoSchema";
 import bcrypt from "bcryptjs";
+import BadRequestError from "../errors/BadRequestError";
 
 const userSchema: Schema = new Schema<IUser, UserModel, IUserMethods>(
   {
     username: {
       type: String,
-      unique: true,
-      require: true,
+      require: false,
     },
     email: {
       type: String,
@@ -21,11 +26,19 @@ const userSchema: Schema = new Schema<IUser, UserModel, IUserMethods>(
     },
     password: {
       type: String,
-      require: true,
+      require: function (this: IUserDocument) {
+        return !this.googleId;
+      },
     },
     icon: {
       type: photoSchema,
       required: false,
+    },
+    googleId: {
+      type: String,
+      required: function (this: IUserDocument) {
+        return !this.password;
+      },
     },
   },
   { timestamps: true }
@@ -33,6 +46,10 @@ const userSchema: Schema = new Schema<IUser, UserModel, IUserMethods>(
 
 // Compare entered password with encrypted password
 userSchema.methods.comparePassword = async function (enteredPassword: string) {
+  if (!this.password) {
+    throw new BadRequestError("Password not set for this user");
+  }
+
   return await bcrypt.compare(enteredPassword, this.password);
 };
 

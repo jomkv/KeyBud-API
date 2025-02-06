@@ -8,11 +8,12 @@ interface IUserSocket {
 }
 
 interface IUser {
-  username: string;
+  username?: string;
   email: string;
-  password: string;
+  password?: string;
   switchType: string;
   icon?: IPhoto;
+  googleId?: string;
 }
 
 interface IUserDocument extends IUser, Document {}
@@ -26,7 +27,7 @@ type UserModel = Model<IUser, {}, IUserMethods>;
 interface IUserPayload {
   id: Types.ObjectId;
   _id?: Types.ObjectId;
-  username: String;
+  username?: String;
   switchType: String;
   password?: string;
   email: String;

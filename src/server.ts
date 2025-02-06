@@ -17,6 +17,7 @@ import postsRouter from "./routes/postsRoute";
 import commentRouter from "./routes/commentRoute";
 import messageRouter from "./routes/messageRoute";
 import searchRouter from "./routes/searchRoute";
+import authRouter from "./routes/authRoute";
 
 // * App
 dotenv.config();
@@ -43,6 +44,7 @@ app.use("/api/posts", postsRouter);
 app.use("/api/comment", commentRouter);
 app.use("/api/message", messageRouter);
 app.use("/api/search", searchRouter);
+app.use("/api/auth", authRouter);
 
 app.all(
   "*",
