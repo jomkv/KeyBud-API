@@ -1,11 +1,9 @@
 import Posts from "../models/Posts";
-import User from "../models/User";
 import Comment from "../models/Comment";
 import PostLike from "../models/PostLike";
 import { IPosts } from "../@types/postsType";
-import { deleteImages, uploadImage, uploadImages } from "../utils/cloudinary";
+import { deleteImages, uploadImages } from "../utils/cloudinary";
 import IPhoto from "../@types/photoType";
-import { IUserPayload } from "../@types/userType";
 import {
   getPostProperties,
   getMultiplePostProperties,
