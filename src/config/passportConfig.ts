@@ -55,7 +55,6 @@ passport.use(
           user = new User({
             googleId: id,
             email,
-            username: `user${id}`,
             icon: profile.photos?.[0].value,
           });
 
