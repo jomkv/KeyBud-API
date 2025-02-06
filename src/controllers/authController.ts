@@ -97,6 +97,10 @@ const loginUser = asyncHandler(
       $or: [{ username: usernameOrEmail }, { email: usernameOrEmail }],
     });
 
+    if (!user) {
+      throw new BadRequestError("User not found");
+    }
+
     if (user && (await user.comparePassword(password))) {
       const userPayload: IUserPayload = {
         id: user._id,
