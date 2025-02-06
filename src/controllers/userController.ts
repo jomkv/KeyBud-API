@@ -159,13 +159,22 @@ const getUsersAndIds = asyncHandler(async (req: Request, res: Response) => {
 const editProfile = asyncHandler(async (req: Request, res: Response) => {
   const { username, switchType } = req.body;
   const rawIcon: any = req.file;
-  const user = await User.findById(req.kbUser?._id);
+  const user = await User.findById(req.kbUser?._id).select("-password");
 
   if (!user) {
     throw new BadRequestError("User not found");
   }
 
-  const icon = rawIcon ? await uploadImage(rawIcon) : null;
+  // Check if usernameEditedAt was within the past 30 days
+  if (username && username !== user.username && user.usernameEditedAt) {
+    const THIRTY_DAYS_AGO = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    if (user.usernameEditedAt > THIRTY_DAYS_AGO) {
+      throw new BadRequestError(
+        "Username can only be changed once every 30 days"
+      );
+    }
+  }
+  const icon = rawIcon ? (await uploadImage(rawIcon)).url : null;
 
   user.username = username || user.username;
   user.switchType = switchType || user.switchType;
@@ -176,7 +185,7 @@ const editProfile = asyncHandler(async (req: Request, res: Response) => {
 
     res.status(200).json({
       message: "User Profile updated",
-      updatedUser: user,
+      user,
     });
   } catch (error) {
     throw new DatabaseError();
