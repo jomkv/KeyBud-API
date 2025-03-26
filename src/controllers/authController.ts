@@ -101,6 +101,11 @@ const loginUser = asyncHandler(
       throw new BadRequestError("User not found");
     }
 
+    // If user registered using google
+    if (!user.password) {
+      throw new BadRequestError("Please login using google");
+    }
+
     if (user && (await user.comparePassword(password))) {
       const userPayload: IUserPayload = {
         id: user._id,
