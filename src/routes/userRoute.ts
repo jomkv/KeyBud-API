@@ -29,6 +29,6 @@ router.route("/:id/posts").get(optionalJwt, getUserPosts);
 router
   .route("/:id")
   .get(checkObjectId, optionalJwt, getUserProfile)
-  .post(checkObjectId, protect, upload.single("userIcon"), setUserIcon);
+  .post(checkObjectId, protect, upload.single("icon"), setUserIcon);
 
 export default router;

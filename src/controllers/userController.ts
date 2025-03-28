@@ -158,7 +158,7 @@ const getUsersAndIds = asyncHandler(async (req: Request, res: Response) => {
 // @access Private
 const editProfile = asyncHandler(async (req: Request, res: Response) => {
   const { username, switchType } = req.body;
-  const rawIcon: any = req.file;
+  const rawIcon: Express.Multer.File | undefined = req.file;
   const user = await User.findById(req.kbUser?._id).select("-password");
 
   if (!user) {
@@ -174,7 +174,8 @@ const editProfile = asyncHandler(async (req: Request, res: Response) => {
       );
     }
   }
-  const icon = rawIcon ? (await uploadImage(rawIcon)).url : null;
+
+  const icon = rawIcon ? (await uploadImage(rawIcon.buffer)).url : null;
 
   user.username = username || user.username;
   user.switchType = switchType || user.switchType;
