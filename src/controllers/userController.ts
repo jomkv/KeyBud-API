@@ -165,13 +165,25 @@ const editProfile = asyncHandler(async (req: Request, res: Response) => {
     throw new BadRequestError("User not found");
   }
 
-  // Check if usernameEditedAt was within the past 30 days
-  if (username && username !== user.username && user.usernameEditedAt) {
-    const THIRTY_DAYS_AGO = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    if (user.usernameEditedAt > THIRTY_DAYS_AGO) {
-      throw new BadRequestError(
-        "Username can only be changed once every 30 days"
-      );
+  // Check if username is provided and if it is different from the current one
+  if (username && username !== user.username) {
+    const isTaken = await User.findOne({ username });
+
+    // Check if username is already taken
+    if (isTaken) {
+      throw new BadRequestError("Username already taken");
+    }
+
+    // Check if username has been edited before
+    if (user.usernameEditedAt) {
+      const THIRTY_DAYS_AGO = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+      // Check if username was edited within the last 30 days
+      if (user.usernameEditedAt > THIRTY_DAYS_AGO) {
+        throw new BadRequestError(
+          "Username can only be changed once every 30 days"
+        );
+      }
     }
   }
 
@@ -189,6 +201,7 @@ const editProfile = asyncHandler(async (req: Request, res: Response) => {
       user,
     });
   } catch (error) {
+    console.log(error);
     throw new DatabaseError();
   }
 });
