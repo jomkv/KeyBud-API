@@ -8,7 +8,9 @@ const fileFilter = (req: Request, file: any, cb: any) => {
   if (
     file.mimetype === "image/jpeg" ||
     file.mimetype === "image/jpg" ||
-    file.mimetype === "image/png"
+    file.mimetype === "image/png" ||
+    file.mimetype === "image/svg+xml" ||
+    file.mimetype === "image/gif"
   ) {
     cb(null, true);
   } else {
