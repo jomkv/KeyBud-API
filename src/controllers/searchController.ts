@@ -1,6 +1,8 @@
 import Posts from "../models/Posts";
 import User from "../models/User";
 import { getMultiplePostProperties } from "../utils/postHelper";
+import { IUserDocument } from "../@types/userType";
+import { IPostWithProps } from "../@types/postsType";
 
 // * Libraries
 import asyncHandler from "express-async-handler";
@@ -15,19 +17,24 @@ import AuthenticationError from "../errors/AuthenticationError";
 // @route POST /api/search
 // @access Public
 const search = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {
+  async (req: Request, res: Response): Promise<any> => {
     const { query } = req.body;
 
+    let users: IUserDocument[] = [];
+    let posts: IPostWithProps[] = [];
+
     if (!query) {
-      throw new BadRequestError("Incomplete input, query is required");
+      return res
+        .status(200)
+        .json({ message: "Search results go here", posts, users });
     }
 
-    const posts = await getMultiplePostProperties(
+    posts = await getMultiplePostProperties(
       await Posts.find({ $text: { $search: query } }),
       req.kbUser
     );
 
-    const users = await User.find({
+    users = await User.find({
       username: { $regex: query, $options: "i" },
     }).select("-password"); // option "i" makes the search case-insensitive
 
