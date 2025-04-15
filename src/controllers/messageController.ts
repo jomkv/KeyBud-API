@@ -1,7 +1,7 @@
 import Conversation from "../models/Conversation";
 import Message from "../models/Message";
 import { IMessage } from "../@types/messageType";
-import { getUserSockets } from "../utils/userSockets";
+import { io } from "../config/socket";
 
 // * Libraries
 import asyncHandler from "express-async-handler";
@@ -30,7 +30,9 @@ const createMessage = asyncHandler(
       participants: { $all: [senderId, receiverId] },
     });
 
-    if (!conversation) {
+    const isNewConversation = conversation === null; // check if conversation is new
+
+    if (isNewConversation) {
       // create new conversation
       conversation = await Conversation.create({
         participants: [senderId, receiverId],
@@ -48,17 +50,24 @@ const createMessage = asyncHandler(
     });
 
     if (newMessage) {
-      conversation.messages.push(newMessage._id); // push message id to the conversation's messages array
-      await conversation.save(); // save conversation document
+      conversation!.messages.push(newMessage._id); // use non-null assertion operator since conversation is guaranteed to exist
+      await conversation!.save(); // save conversation document
 
-      const participantSockets = getUserSockets(
-        senderId as unknown as string,
-        receiverId as unknown as string
-      );
+      await conversation!.populate([
+        { path: "messages" },
+        {
+          path: "participants",
+          select: "-password",
+        },
+      ]);
 
-      participantSockets.forEach((socket) => {
-        socket.socket.emit("newMessage", newMessage);
-      });
+      io.emit(`newMessage`, { newMessage, conversationId: conversation!.id });
+
+      if (isNewConversation) {
+        io.emit(`newConversation`, {
+          newConversation: conversation,
+        });
+      }
 
       res.status(201).json({
         message: "Message successfuly sent",
