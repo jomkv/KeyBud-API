@@ -144,7 +144,7 @@ const getUsersAndIds = asyncHandler(async (req: Request, res: Response) => {
   });
 
   conversations.forEach((convo) => {
-    users = users.filter((user) => convo.participants.includes(user.id));
+    users = users.filter((user) => !convo.participants.includes(user._id));
   });
 
   res.status(200).json({
