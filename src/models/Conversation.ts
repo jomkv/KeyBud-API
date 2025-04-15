@@ -15,6 +15,7 @@ const conversationSchema: Schema = new Schema<IConversation>(
         type: mongoose.Schema.Types.ObjectId,
         ref: "Message",
         default: [],
+        required: false,
       },
     ],
   },

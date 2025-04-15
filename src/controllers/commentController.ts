@@ -1,13 +1,12 @@
 import Posts from "../models/Posts";
 import Comment from "../models/Comment";
-import User from "../models/User";
 import CommentLike from "../models/CommentLike";
 import { IComment, ICommentLike } from "../@types/commentType";
 import { IPosts } from "../@types/postsType";
 
 // * Libraries
 import asyncHandler from "express-async-handler";
-import { Types } from "mongoose";
+import { startSession } from "mongoose";
 import { Request, Response } from "express";
 
 // * Custom Errors
@@ -113,16 +112,26 @@ const deleteComment = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const commentId = req.params.id;
 
-    const deletedComment = await Comment.findByIdAndDelete(commentId);
-    if (deletedComment) {
-      await CommentLike.deleteMany({ comment: commentId });
+    const session = await startSession();
+    session.startTransaction();
+
+    try {
+      const deletedComment = await Comment.findByIdAndDelete(commentId, {
+        session,
+      });
+      await CommentLike.deleteMany({ comment: commentId }).session(session);
+
+      await session.commitTransaction();
 
       res.status(200).json({
         message: "Comment successfully deleted",
         deletedComment,
       });
-    } else {
+    } catch (error) {
+      await session.abortTransaction();
       throw new DatabaseError();
+    } finally {
+      await session.endSession();
     }
   }
 );

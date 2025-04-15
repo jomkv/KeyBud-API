@@ -11,7 +11,7 @@ import {
 
 // * Libraries
 import { Request, Response } from "express";
-import mongoose from "mongoose";
+import mongoose, { startSession } from "mongoose";
 import asyncHandler from "express-async-handler";
 
 // * Custom Errors
@@ -164,7 +164,7 @@ const deletePost = asyncHandler(
       throw new BadRequestError("Post not found");
     }
 
-    const session: mongoose.ClientSession = await mongoose.startSession();
+    const session = await startSession();
     session.startTransaction();
 
     try {
@@ -190,6 +190,8 @@ const deletePost = asyncHandler(
     } catch (error) {
       await session.abortTransaction();
       throw new DatabaseError();
+    } finally {
+      await session.endSession();
     }
   }
 );
@@ -210,14 +212,19 @@ const likePost = asyncHandler(
 
     const isLiked = await PostLike.findOne({ user: userId, post: postId });
 
-    if (isLiked) {
-      await PostLike.findByIdAndDelete(isLiked.id);
-    } else {
-      await PostLike.create({ user: userId, post: postId });
+    try {
+      if (isLiked) {
+        await PostLike.findByIdAndDelete(isLiked.id);
+      } else {
+        await PostLike.create({ user: userId, post: postId });
+      }
+
+      res.status(200).json({
+        message: `Post successfully ${isLiked ? "Unliked" : "Liked"}`,
+      });
+    } catch (error) {
+      throw new DatabaseError();
     }
-    res.status(200).json({
-      message: `Post successfully ${isLiked ? "Unliked" : "Liked"}`,
-    });
   }
 );
 

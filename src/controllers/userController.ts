@@ -201,7 +201,6 @@ const editProfile = asyncHandler(async (req: Request, res: Response) => {
       user,
     });
   } catch (error) {
-    console.log(error);
     throw new DatabaseError();
   }
 });

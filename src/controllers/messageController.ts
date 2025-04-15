@@ -1,11 +1,11 @@
 import Conversation from "../models/Conversation";
 import Message from "../models/Message";
-import { IMessage } from "../@types/messageType";
 import { io } from "../config/socket";
 
 // * Libraries
 import asyncHandler from "express-async-handler";
 import { Request, Response } from "express";
+import { startSession } from "mongoose";
 
 // * Custom Errors
 import BadRequestError from "../errors/BadRequestError";
@@ -26,32 +26,34 @@ const createMessage = asyncHandler(
     const receiverId = req.params.id;
     const senderId = req.kbUser?.id;
 
-    let conversation = await Conversation.findOne({
-      participants: { $all: [senderId, receiverId] },
-    });
-
-    const isNewConversation = conversation === null; // check if conversation is new
-
-    if (isNewConversation) {
-      // create new conversation
-      conversation = await Conversation.create({
-        participants: [senderId, receiverId],
-      });
-
-      if (!conversation) {
-        throw new DatabaseError();
-      }
-    }
-
-    const newMessage: IMessage | null = await Message.create({
+    const newMessage = new Message({
       senderId,
       receiverId,
       message,
     });
 
-    if (newMessage) {
-      conversation!.messages.push(newMessage._id); // use non-null assertion operator since conversation is guaranteed to exist
-      await conversation!.save(); // save conversation document
+    const session = await startSession();
+    session.startTransaction();
+
+    try {
+      let conversation = await Conversation.findOne({
+        participants: { $all: [senderId, receiverId] },
+      });
+
+      const isNewConversation = conversation === null; // check if conversation is new
+
+      if (isNewConversation) {
+        // create new conversation
+        conversation = new Conversation({
+          participants: [senderId, receiverId],
+          messages: [],
+        });
+      }
+
+      await newMessage.save({ session });
+
+      conversation!.messages.push(newMessage._id);
+      await conversation!.save({ session });
 
       await conversation!.populate([
         { path: "messages" },
@@ -60,6 +62,8 @@ const createMessage = asyncHandler(
           select: "-password",
         },
       ]);
+
+      await session.commitTransaction();
 
       io.emit(`newMessage`, { newMessage, conversationId: conversation!.id });
 
@@ -73,8 +77,11 @@ const createMessage = asyncHandler(
         message: "Message successfuly sent",
         newMessage,
       });
-    } else {
+    } catch (error) {
+      await session.abortTransaction();
       throw new DatabaseError();
+    } finally {
+      await session.endSession();
     }
   }
 );
@@ -96,11 +103,13 @@ const getConversation = asyncHandler(
     }
 
     // populate only after validation to save resources
-    await conversation.populate("messages");
-    await conversation.populate({
-      path: "participants",
-      select: "-password",
-    });
+    await conversation.populate([
+      { path: "messages" },
+      {
+        path: "participants",
+        select: "-password",
+      },
+    ]);
 
     res.status(200).json({
       message: "Conversation found",
