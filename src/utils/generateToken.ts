@@ -33,6 +33,7 @@ const generateToken = (res: Response, user: IUserPayload): void => {
     secure: process.env.NODE_ENV === "production", // Use secure cookies in prod
     sameSite: "strict",
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+    domain: process.env.NODE_ENV === "production" ? "jomkv.tech" : undefined,
   });
 
   res.cookie("refreshToken", refreshToken, {
