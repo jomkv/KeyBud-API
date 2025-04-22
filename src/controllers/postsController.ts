@@ -238,16 +238,32 @@ const pinPost = asyncHandler(async (req: Request, res: Response) => {
     throw new BadRequestError("Post not found");
   }
 
-  post.isPinned = !post?.isPinned;
+  const session = await startSession();
+  session.startTransaction();
 
   try {
-    await post.save();
+    post.isPinned = !post?.isPinned;
+
+    // Pin current post
+    await post.save({ session });
+
+    // Unpin all other pinned post(s)
+    await Posts.updateMany(
+      { ownerId: post.ownerId, isPinned: true, _id: { $ne: post._id } },
+      { isPinned: false },
+      { session }
+    );
+
+    await session.commitTransaction();
 
     res.status(200).json({
       message: `Post successfully ${post.isPinned ? "Pinned" : "Unpinned"}`,
     });
   } catch (error) {
+    await session.abortTransaction();
     throw new DatabaseError();
+  } finally {
+    await session.endSession();
   }
 });
 
