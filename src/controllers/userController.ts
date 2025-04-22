@@ -32,8 +32,33 @@ const getUserProfile = asyncHandler(
       throw new BadRequestError("User not found");
     }
 
+    const userPosts = await Posts.find({ ownerId: req.params.id });
+
+    let userPostsPayload: IPostWithProps[] = [];
+
+    if (userPosts) {
+      userPostsPayload = await getMultiplePostProperties(userPosts, req.kbUser);
+    }
+
+    const likes: IPopulatedPostLike[] = await PostLike.find({
+      user: req.params.id,
+    }).populate("post");
+
+    let likedPosts: IPostWithProps[] = [];
+
+    if (likes) {
+      likedPosts = await Promise.all(
+        likes.map(
+          async (like: IPopulatedPostLike) =>
+            await getPostProperties(like.post, req.kbUser)
+        )
+      );
+    }
+
     res.status(200).json({
       user,
+      posts: userPostsPayload,
+      likes: likedPosts,
     });
   }
 );
