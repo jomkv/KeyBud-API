@@ -1,9 +1,9 @@
 // * Third party dependencies
 import express, { Application, Request, Response } from "express";
 import asyncHandler from "express-async-handler";
-import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import "dotenv/config";
 
 // * Config
 import { io } from "./config/socket";
@@ -20,14 +20,19 @@ import searchRouter from "./routes/searchRoute";
 import authRouter from "./routes/authRoute";
 
 // * App
-dotenv.config();
 const app: Application = express();
 const port: Number = Number(process.env.PORT);
+app.set("trust proxy", 1);
 
 // * Middlewares
 app.use(
   cors({
-    origin: ["http://localhost:3000", String(process.env.CLIENT_URL)],
+    origin: [
+      "http://localhost:3000",
+      "https://keybud.jomkv.tech",
+      "https://www.keybud.jomkv.tech",
+      "https://keybud-4vxei3fof-jomkvs-projects.vercel.app",
+    ],
     methods: ["POST", "GET", "PUT", "PATCH", "DELETE"],
     credentials: true,
   })
