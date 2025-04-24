@@ -32,7 +32,6 @@ const getJwtMiddleware = (req: Request, next: NextFunction) => {
         throw new AuthenticationError();
       }
 
-      req.kbUser = user;
       next();
     }
   );

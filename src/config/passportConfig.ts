@@ -7,26 +7,33 @@ import {
   Strategy as GoogleStrategy,
   StrategyOptions as GoogleStrategyOpts,
 } from "passport-google-oauth20";
-import { IUser, IUserPayload } from "../@types/userType";
+import { IUserDocument, IUserPayload } from "../@types/userType";
 import User from "../models/User";
 import dotenv from "dotenv";
 import cookieExtractor from "../utils/cookieExtractor";
+import { Request } from "express";
 
 dotenv.config();
 
 const jwtStrategyOpts: JwtStrategyOpts = {
   jwtFromRequest: cookieExtractor,
   secretOrKey: process.env.JWT_SECRET as string,
+  passReqToCallback: true,
 };
 
 passport.use(
   new JwtStrategy(
     jwtStrategyOpts,
-    async (payload: IUserPayload, done: DoneCallback) => {
+    async (req: Request, payload: IUserPayload, done: DoneCallback) => {
       try {
-        const user: IUser | null = await User.findById(payload.id);
+        const user: IUserDocument | null = await User.findById(payload.id);
 
-        return done(null, user ? user : false);
+        if (user) {
+          req.kbUser = user;
+          return done(null, user);
+        } else {
+          return done(null, false);
+        }
       } catch (error) {
         return done(error, false);
       }
