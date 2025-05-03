@@ -31,7 +31,7 @@ const generateToken = (res: Response, user: IUserPayload): void => {
   res.cookie("jwt", token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production", // Use secure cookies in prod
-    sameSite: "strict",
+    sameSite: "none",
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
     domain: process.env.NODE_ENV === "production" ? "jomkv.tech" : undefined,
   });
@@ -39,7 +39,7 @@ const generateToken = (res: Response, user: IUserPayload): void => {
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production", // Use secure cookies in prod
-    sameSite: "strict",
+    sameSite: "none",
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
   });
 };
