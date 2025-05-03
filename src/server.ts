@@ -22,7 +22,7 @@ import authRouter from "./routes/authRoute";
 // * App
 const app: Application = express();
 const port: Number = Number(process.env.PORT);
-//app.set("trust proxy", 1);
+app.set("trust proxy", 1);
 
 // * Middlewares
 app.use(
