@@ -4,8 +4,6 @@ import { Request } from "express";
 const cookieExtractor = (req: Request): string | null => {
   let token = null;
 
-  console.log("cookieExtractor", req.cookies);
-
   if (req.cookies && req.cookies.jwt) {
     token = req.cookies.jwt;
   }
