@@ -31,7 +31,7 @@ export const uploadImage = async (imageBuffer: Buffer): Promise<IPhoto> => {
           }
 
           const photo: IPhoto = {
-            url: res.url,
+            url: res.secure_url,
             id: res.public_id,
           };
 
