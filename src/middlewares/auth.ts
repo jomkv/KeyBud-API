@@ -25,11 +25,11 @@ const getJwtMiddleware = (req: Request, next: NextFunction) => {
     { session: false },
     (err: Error | null, user: IUserDocument | false) => {
       if (err) {
-        throw new DatabaseError();
+        return next(new DatabaseError());
       }
 
       if (!user) {
-        throw new AuthenticationError();
+        return next(new AuthenticationError());
       }
 
       next();
