@@ -7,7 +7,7 @@ const errorHandler: ErrorRequestHandler = (
   res: Response,
   next: NextFunction
 ) => {
-  console.log(err);
+  console.log("\n" + err + "\n");
 
   if (err instanceof CustomError) {
     return res.status(err.StatusCode).json(err.serialize());
