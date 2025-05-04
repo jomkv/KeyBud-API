@@ -1,6 +1,6 @@
 <h1 align="center">
   <div align="center">
-    <img alt="KeyBud Logo" src="./public/images/Keybud Icon.svg" height="150px" width="auto"/>
+    <img alt="KeyBud Logo" src="./Keybud Icon.svg" height="150px" width="auto"/>
   </div>
   <br/>
   KeyBud
