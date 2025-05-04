@@ -24,9 +24,7 @@ import DatabaseError from "../errors/DatabaseError";
 const getManyPosts = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const posts: any[] = await getMultiplePostProperties(
-      await Posts.find()
-        .sort({ createdAt: -1 }) // sort descending
-        .limit(10),
+      await Posts.find().sort({ createdAt: -1 }),
       req.kbUser
     );
 

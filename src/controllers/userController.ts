@@ -162,7 +162,9 @@ const getUserPosts = asyncHandler(async (req: Request, res: Response) => {
 // @route GET /api/user
 // @access Private
 const getUsersAndIds = asyncHandler(async (req: Request, res: Response) => {
-  let users = await User.find().select("username _id");
+  let users = await User.find({ _id: { $ne: req.kbUser?._id } }).select(
+    "username _id"
+  );
 
   const conversations = await Conversation.find({
     participants: req.kbUser?._id,
