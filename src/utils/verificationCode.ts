@@ -78,7 +78,7 @@ export const sendCode = async (email: string, code: string) => {
           <div class="email-container">
             <div class="email-header">
               <a href="${process.env.CLIENT_URL}" target="_blank">
-                <img src="cid:keybudlogo" alt="Keybud Icon">
+                <img src="https://res.cloudinary.com/deo9b05on/image/upload/v1746514759/Keybud_Icon2_cltwsp.png" alt="Keybud Icon">
               </a>
             </div>
             <div class="email-body">
@@ -93,13 +93,6 @@ export const sendCode = async (email: string, code: string) => {
         </body>
       </html>
       `,
-      attachments: [
-        {
-          filename: "Keybud Icon.png",
-          path: path.resolve(__dirname, "../../Keybud Icon2.png"),
-          cid: "keybudlogo",
-        },
-      ],
     };
 
     await transporter.sendMail(mailDetails);
