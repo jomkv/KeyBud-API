@@ -2,6 +2,8 @@ import { Router } from "express";
 import passport from "passport";
 
 import {
+  verifyUser,
+  resendCode,
   registerUser,
   loginUser,
   loginGoogle,
@@ -11,6 +13,8 @@ import { protect } from "../middlewares/auth";
 
 const router: Router = Router();
 
+router.route("/verify").post(verifyUser);
+router.route("/resend").post(resendCode);
 router.route("/register").post(registerUser);
 router.route("/login").post(loginUser);
 router.route("/logout").post(logoutUser);

@@ -7,6 +7,15 @@ interface IUserSocket {
   socket: Socket;
 }
 
+interface IUserInput {
+  username?: string;
+  email: string;
+  password?: string;
+  switchType: string;
+  icon?: string;
+  verificationCode: string;
+}
+
 interface IUser {
   username?: string;
   email: string;
@@ -37,6 +46,7 @@ interface IUserPayload {
 }
 
 export {
+  IUserInput,
   IUser,
   IUserPayload,
   IUserMethods,
