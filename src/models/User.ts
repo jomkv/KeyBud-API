@@ -8,6 +8,7 @@ const userSchema: Schema = new Schema<IUser, UserModel, IUserMethods>(
     username: {
       type: String,
       require: false,
+      unique: false,
     },
     email: {
       type: String,
