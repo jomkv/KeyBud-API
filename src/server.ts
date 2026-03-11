@@ -32,10 +32,11 @@ app.use(
       "https://keybud.jomkv.tech",
       "https://www.keybud.jomkv.tech",
       "https://keybud-4vxei3fof-jomkvs-projects.vercel.app",
+      "https://www.keybud.jomkv.me",
     ],
     methods: ["POST", "GET", "PUT", "PATCH", "DELETE"],
     credentials: true,
-  })
+  }),
 );
 app.use(express.urlencoded({ extended: false })); // allow destructuring of req.body
 app.use(express.json());
@@ -58,7 +59,7 @@ app.all(
   "*",
   asyncHandler(() => {
     throw new Error("This endpoint does not exist");
-  })
+  }),
 );
 
 app.use(errorHandler);
