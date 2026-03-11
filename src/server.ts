@@ -33,6 +33,7 @@ app.use(
       "https://www.keybud.jomkv.tech",
       "https://keybud-4vxei3fof-jomkvs-projects.vercel.app",
       "https://www.keybud.jomkv.me",
+      "https://keybud.jomkv.me",
     ],
     methods: ["POST", "GET", "PUT", "PATCH", "DELETE"],
     credentials: true,
