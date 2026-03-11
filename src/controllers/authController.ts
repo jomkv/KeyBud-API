@@ -77,7 +77,7 @@ const verifyUser = asyncHandler(
     } catch (error) {
       throw new ServerError();
     }
-  }
+  },
 );
 
 // @desc Resend verification code
@@ -109,7 +109,7 @@ const resendCode = asyncHandler(
     } catch (error) {
       throw new ServerError();
     }
-  }
+  },
 );
 
 // @desc Create new user
@@ -194,7 +194,7 @@ const registerUser = asyncHandler(
     } finally {
       await session.endSession();
     }
-  }
+  },
 );
 
 // @desc User login
@@ -241,7 +241,7 @@ const loginUser = asyncHandler(
     } else {
       throw new BadRequestError("Username/Email and Password does not match");
     }
-  }
+  },
 );
 
 // @desc User login using google
@@ -275,6 +275,8 @@ const logoutUser = (req: Request, res: Response): void => {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "none",
+    path: "/",
+    domain: ".jomkv.me",
     expires: new Date(0),
   });
   res.status(200).json({ message: "Logged out successfully" });
